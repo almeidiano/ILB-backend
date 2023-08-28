@@ -36,16 +36,16 @@ $routes->group('community', function($routes) {
 
     // Método POST
     $routes->post('posts', 'PostController::createPost');
-    $routes->post('posts/(:segment)/comments', 'PostController::createComment/$1');
+    $routes->post('posts/(:segment)/comments', 'CommentsController::createComment/$1');
     $routes->post('login', 'UserController::index');
 
     // Método DELETE
     $routes->delete('posts/(:segment)', 'PostController::deletePost/$1');
-    $routes->delete('comments/(:segment)', 'PostController::deleteComment/$1');
+    $routes->delete('comments/(:segment)', 'CommentsController::deleteComment/$1');
 
     // Métodos PUT
     $routes->put('posts/(:segment)', 'PostController::updatePost/$1');
-    $routes->put('comments/(:segment)', 'PostController::updateComment/$1');
+    $routes->put('comments/(:segment)', 'CommentsController::updateComment/$1');
 });
 
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps

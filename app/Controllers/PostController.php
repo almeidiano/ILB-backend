@@ -56,27 +56,4 @@ class PostController extends BaseController
             return $this->response->setJSON($postmodel->deletePost($postId));
         }
     }
-
-    public function createComment($postId) {
-        if($this->request->is('post')) {
-            $json = $this->request->getVar(["content", "images", "videos"]);
-            $postmodel = new PostModel();
-            return $this->response->setJSON($postmodel->createComment($postId, $json));
-        }
-    }
-
-    public function updateComment($commentId) {
-        if($this->request->is('put')) {
-            $json = $this->request->getVar(["content", "images", "videos"]);
-            $postmodel = new PostModel();
-            return $this->response->setJSON($postmodel->updateComment($commentId, $json));
-        }
-    }
-
-    public function deleteComment($commentId) {
-        if($this->request->is('delete')) {
-            $postmodel = new PostModel();
-            return $this->response->setJSON($postmodel->deleteComment($commentId));
-        }
-    }
 }
