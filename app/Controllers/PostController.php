@@ -56,4 +56,8 @@ class PostController extends BaseController
             return $this->response->setJSON($postmodel->deletePost($postId));
         }
     }
+
+    public function getPostsCommentedByUser() {
+
+    }
 }

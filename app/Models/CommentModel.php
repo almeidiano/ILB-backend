@@ -11,14 +11,22 @@ use Exception;
 class CommentModel
 {
     private Collection $collection;
+    private Collection $userCollection;
 
     function __construct() {
         $connection = new DatabaseConnector();
         $database = $connection->getDatabase();
         $this->collection = $database->posts;
+        $this->userCollection = $database->users;
     }
 
-    public function createComment($postId, $json) {
+//    function getUserCollection() {
+//        $connection = new DatabaseConnector();
+//        $database = $connection->getDatabase();
+//        $this->userCollection = $database->users;
+//    }
+
+    public function createComment($postId, $json, $allImages) {
         if($postId) {
             if($json) {
                 // Conteúdo do post obrigatório
@@ -28,11 +36,22 @@ class CommentModel
                     try {
                         $postFound = $this->collection->findOne(['_id' => new ObjectId($postId)]);
 
+                        // Recebendo usuário que comentou para preencher
+                        // os campos do comentário que pertence ao usuário recebido.
+
+                        $userFound = $this->userCollection->findOne(['_id' => new ObjectId($json['user_id'])]);
+
                         if($postFound) {
 
                             $newComment = [
                                 '_id' => new \MongoDB\BSON\ObjectId(),
-                                'content' => $content
+                                'content' => $content,
+                                'post_id' => $postFound['_id'],
+                                'user_id' => $userFound['_id'],
+                                'userLiked' => false,
+                                'userName' => $userFound['name'],
+                                'userPhoto' => 'fotodousuario.png',
+                                'images' => $allImages
                             ];
 
                             try{

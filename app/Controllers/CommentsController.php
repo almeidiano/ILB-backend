@@ -4,18 +4,54 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\CommentModel;
+use mysql_xdevapi\Exception;
 
 class CommentsController extends BaseController
 {
+
+    public string $baseUrl;
     public function index()
     {
         echo 'ok';
     }
+
+    public function __construct() {
+        $this->baseUrl = getEnv('app.baseURL');
+    }
+
     public function createComment($postId) {
         if($this->request->is('post')) {
-            $json = $this->request->getVar(["content", "images", "videos"]);
+            $json = $this->request->getVar(["user_id", "content"]);
+
+            // Images
+            $validateImages = $this->validate([
+                'images' => 'uploaded[images]|max_size[images,5000]|is_image[images]'
+            ]);
+
+            $allImages = [];
+
+            if($validateImages) {
+                if ($imagefiles = $this->request->getFiles()) {
+                    try {
+                        foreach ($imagefiles['images'] as $img) {
+                            if ($img->isValid() && ! $img->hasMoved()) {
+                                $newName = $img->getRandomName();
+                                $img->move(ROOTPATH.'uploads', $newName);
+                            }
+
+                            // Selecionando as strings dadas acima e colocando-as num array.
+                            $imageFile = substr($newName, "0");
+                            $allImages[] = ['url' => $imageFile];
+                        }
+                    }Catch(\Exception $e) {
+                        return ResponseController::index(500, 'Ocorreu um erro fatal ao enviar as imagens, erro técnico: '.$e->getMessage(), true);
+                    }
+                }
+
+            }
+
             $commentmodel = new CommentModel();
-            return $this->response->setJSON($commentmodel->createComment($postId, $json));
+            return $this->response->setJSON($commentmodel->createComment($postId, $json, $allImages));
         }
     }
 

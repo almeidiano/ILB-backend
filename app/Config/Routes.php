@@ -29,10 +29,13 @@ $routes->set404Override(function(){
 });
 
 $routes->group('community', function($routes) {
+    // API
+
     // Método GET
     $routes->get('posts', 'PostController::getAllPosts');
     $routes->get('posts/(:segment)', 'PostController::getPost/$1');
-    $routes->get('posts/user/(:any)', 'UserController::getPostsFromUser/$1');
+    $routes->get('posts/user/(:segment)', 'UserController::getPostsFromUser/$1');
+    $routes->get('posts/user/interacted/(:any)', 'UserController::getUserInteractedPosts/$1');
 
     // Método POST
     $routes->post('posts', 'PostController::createPost');
@@ -43,9 +46,30 @@ $routes->group('community', function($routes) {
     $routes->delete('posts/(:segment)', 'PostController::deletePost/$1');
     $routes->delete('comments/(:segment)', 'CommentsController::deleteComment/$1');
 
-    // Métodos PUT
+    // Método PUT
     $routes->put('posts/(:segment)', 'PostController::updatePost/$1');
     $routes->put('comments/(:segment)', 'CommentsController::updateComment/$1');
+
+    // Ultilizadores (users)
+
+    // Método GET
+    $routes->get('posts/commented/(:segment)', 'PostController::getPostsCommentedByUser/$1');
+    $routes->get('posts/saved/(:segment)', 'PostController::getPostsSavedByUser/$1');
+    $routes->get('posts/liked/(:segment)', 'PostController::getPostsLikedByUser/$1');
+
+    // Método POST
+    $routes->post('posts/saved/(:segment)', 'PostController::savePost/$1');
+    $routes->post('posts/liked/(:segment)', 'PostController::likePost/$1');
+    $routes->post('comments/liked/(:segment)', 'CommentsController::likeComment/$1');
+
+    // Método DELETE
+    $routes->delete('posts/saved/(:segment)', 'PostController::deleteSavedPost/$1');
+    $routes->delete('posts/liked/(:segment)', 'PostController::deleteLikedPost/$1');
+    $routes->delete('comments/liked/(:segment)', 'CommentsController::deleteLikedComment/$1');
+
+    // API ADMIN
+
+
 });
 
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps

@@ -28,4 +28,8 @@ class UserController extends BaseController
             return $this->response->setJSON($postsByUserId);
         }
     }
+
+    public function getUserInteractedPosts($userId) {
+        exit('ok');
+    }
 }
