@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
 use App\Models\PostModel;
 
 class PostController extends BaseController
@@ -23,19 +22,15 @@ class PostController extends BaseController
     }
 
     // Read
-    public function getAllPosts(): \CodeIgniter\HTTP\ResponseInterface {
+    public function getAllPosts() {
         $postmodel = new PostModel();
         $posts = $postmodel->getAllPosts();
-
-        // return view('welcome_message');
         return $this->response->setJSON($posts);
     }
 
     public function getPost($id): \CodeIgniter\HTTP\ResponseInterface {
         $postmodel = new PostModel();
         $post = $postmodel->getPost($id);
-
-        // return view('welcome_message');
         return $this->response->setJSON($post);
     }
 
@@ -55,9 +50,5 @@ class PostController extends BaseController
             $postmodel = new PostModel();
             return $this->response->setJSON($postmodel->deletePost($postId));
         }
-    }
-
-    public function getPostsCommentedByUser() {
-
     }
 }

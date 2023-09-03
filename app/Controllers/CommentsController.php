@@ -4,11 +4,10 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\CommentModel;
-use mysql_xdevapi\Exception;
+use Exception;
 
 class CommentsController extends BaseController
 {
-
     public string $baseUrl;
     public function index()
     {
@@ -23,10 +22,12 @@ class CommentsController extends BaseController
         if($this->request->is('post')) {
             $json = $this->request->getVar(["user_id", "content"]);
 
-            // Images
+            // Validação
             $validateImages = $this->validate([
                 'images' => 'uploaded[images]|max_size[images,5000]|is_image[images]'
             ]);
+
+            // Imagens
 
             $allImages = [];
 
@@ -36,18 +37,17 @@ class CommentsController extends BaseController
                         foreach ($imagefiles['images'] as $img) {
                             if ($img->isValid() && ! $img->hasMoved()) {
                                 $newName = $img->getRandomName();
-                                $img->move(ROOTPATH.'uploads', $newName);
+                                $img->move(ROOTPATH.'uploads/images', $newName);
                             }
 
                             // Selecionando as strings dadas acima e colocando-as num array.
                             $imageFile = substr($newName, "0");
-                            $allImages[] = ['url' => $imageFile];
+                            $allImages[] = ['url' => $this->baseUrl.'uploads/images/'.$imageFile];
                         }
-                    }Catch(\Exception $e) {
-                        return ResponseController::index(500, 'Ocorreu um erro fatal ao enviar as imagens, erro técnico: '.$e->getMessage(), true);
+                    }Catch(Exception $e) {
+                        throw new Exception("Ocorreu um erro fatal ao enviar as imagens. Erro técnico: ".$e->getMessage(), 500);
                     }
                 }
-
             }
 
             $commentmodel = new CommentModel();

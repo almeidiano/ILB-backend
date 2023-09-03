@@ -14,17 +14,14 @@ class CommentModel
     private Collection $userCollection;
 
     function __construct() {
-        $connection = new DatabaseConnector();
-        $database = $connection->getDatabase();
-        $this->collection = $database->posts;
-        $this->userCollection = $database->users;
-    }
-
-//    function getUserCollection() {
+        $database = new DatabaseConnector();
+        $this->collection = $database->getCollection("posts");
+        $this->userCollection = $database->getCollection("users");
 //        $connection = new DatabaseConnector();
 //        $database = $connection->getDatabase();
+//        $this->collection = $database->posts;
 //        $this->userCollection = $database->users;
-//    }
+    }
 
     public function createComment($postId, $json, $allImages) {
         if($postId) {
@@ -43,8 +40,11 @@ class CommentModel
 
                         if($postFound) {
 
+                            $now = new \MongoDB\BSON\UTCDateTime();
+
                             $newComment = [
                                 '_id' => new \MongoDB\BSON\ObjectId(),
+                                'date' => $now,
                                 'content' => $content,
                                 'post_id' => $postFound['_id'],
                                 'user_id' => $userFound['_id'],
@@ -60,20 +60,19 @@ class CommentModel
                                     ['$push' => ['comments' => $newComment]]
                                 );
 
-                                return ResponseController::index(200, 'Comentário adicionado com sucesso', false);
+                                return 'Comentário adicionado com sucesso';
                             }Catch(Exception $e) {
-                                return ResponseController::index(500, 'Não foi possivel adicionar comentário ao post com id '.$postId.' Erro técnico: '.$e->getMessage(), true);
-                            }
+                                throw new Exception("Não foi possivel adicionar comentário ao post com id '.$postId.' Erro técnico: ".$e->getMessage(), 500);                            }
                         }
                     }catch(Exception $e) {
-                        return ResponseController::index(500, 'Não foi possível obter post para criar comentário com o id '.$postId.' Erro técnico: '.$e->getMessage(), true);
+                        throw new Exception("Não foi possível obter post para criar comentário com o id '.$postId.' Erro técnico: ".$e->getMessage(), 500);
                     }
                 }else {
-                    return ResponseController::index(401, 'Comentário não especificado', true);
+                    throw new Exception('Comentário não especificado', 401);
                 }
 
             }else {
-                return ResponseController::index(401, 'Corpo do comentário não especificado', true);
+                throw new Exception('Corpo do comentário não especificado', 401);
             }
         }
     }
@@ -91,9 +90,9 @@ class CommentModel
                 ['$set' => ['comments.$.content' => $content]]
             );
 
-            return ResponseController::index(200, 'Comentário editado com sucesso', false);
+            return 'Comentário editado com sucesso';
         }Catch(Exception $e) {
-            return ResponseController::index(500, 'Ocorreu um erro ao editar comentário, erro técnico: '.$e->getMessage(), true);
+            throw new Exception("Ocorreu um erro ao editar comentário. Erro técnico: ".$e->getMessage(), 500);
         }
     }
 
@@ -106,9 +105,9 @@ class CommentModel
                 ['$pull' => ['comments' => ['_id' => $commentId]]]
             );
 
-            return ResponseController::index(200, 'Comentário deletado com sucesso', false);
+            return 'Comentário deletado com sucesso';
         }catch(Exception $e) {
-            return ResponseController::index(500, 'Ocorreu um erro ao deletar comentário, erro técnico: '.$e->getMessage(), true);
+            throw new Exception("Ocorreu um erro ao deletar comentário. Erro técnico: ".$e->getMessage(), 500);
         }
     }
 }

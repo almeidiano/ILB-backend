@@ -2,6 +2,8 @@
 
 namespace App\Libraries;
 
+use Cassandra\Collection;
+use Config\MongoDB;
 use Exception;
 use MongoDB\Client;
 use MongoDB\Database;
@@ -15,37 +17,34 @@ class DatabaseConnector {
     /**
      * @throws Exception
      */
-    function showError(string $errorMessage, int $httpErrorCode) {
-        http_response_code($httpErrorCode);
-        throw new Exception($errorMessage);
-    }
-
-    /**
-     * @throws Exception
-     */
     function __construct() {
-//        $uri = getenv('ATLAS_URI');
-//        $database = getenv('DATABASE');
+        $uri = getenv('URL_ATLAS');
+        $database = getenv('BANCO_DE_DADOS');
 
-//        if (empty($uri) || empty($database)) {
-//            throw new Exception('You need to declare ATLAS_URI and DATABASE in your .env file!');
-//        }
 
-        try {
-            $this->client = new Client("mongodb+srv://almeidiano:BTYCyUpOEwRtOb30@cluster0.iwnx7xq.mongodb.net/?retryWrites=true");
-        } catch(ConnectionException $ex) {
-            throw new Exception('Couldn\'t connect to database: ' . $ex->getMessage(), 500);
+        if (empty($uri) || empty($database)) {
+            throw new Exception('Você precisa declarar a URL_ATLAS e o BANCO_DE_DADOS no arquivo .env!', 500);
         }
 
         try {
-            $this->database = $this->client->selectDatabase("ILB_comunidade");
+            $this->client = new Client($uri);
+        } catch(ConnectionException $ex) {
+            throw new Exception('Não foi possível conectar-se ao banco de dados. Erro técnico: ' . $ex->getMessage(), 500);
+        }
+
+        try {
+            $this->database = $this->client->selectDatabase($database);
         } catch(RuntimeException $ex) {
-            throw new Exception('Error while fetching database with name: ');
+            throw new Exception("Não foi possível conectar-se ao banco de dados intitulado ".$database.". Erro técnico: " . $ex->getMessage(), 500);
         }
     }
 
-    function getDatabase(): Database
+    function getCollection($collection): \MongoDB\Collection
     {
-        return $this->database;
+        try {
+            return $this->database->$collection;
+        }Catch(ConnectionException $e) {
+            throw new Exception("Não foi possível conectar-se à coleção ".$collection.". Erro técnico: " . $ex->getMessage(), 500);
+        }
     }
 }

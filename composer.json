@@ -11,7 +11,8 @@
         "codeigniter4/framework": "^4.0",
         "firebase/php-jwt": "^6.8",
         "mongodb/mongodb": "^1.12",
-      "ext-json": "*"
+      "ext-json": "*",
+      "ext-cassandra": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
