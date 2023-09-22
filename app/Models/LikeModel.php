@@ -18,31 +18,124 @@ class LikeModel
     {
         $database = new DatabaseConnector();
         $this->collection = $database->getCollection("likes");
-        $this->usersCollection = $database->getCollection("users");
+        $this->usersCollection = $database->getCollection("Users");
         $this->postsCollection = $database->getCollection("posts");
     }
 
-    function getPostsLikedFromUser($userId) {
+    function getLikedComments($postId, $userId) {
+        $postmodel = new PostModel();
+
+        if($postId) {
+            $postFound = $postmodel->getPost($postId);
+        }else {
+            $posts = $postmodel->getAllPosts();
+        }
+
+        $likedComments = $this->collection->find([
+            'user_id' => new ObjectId($userId)
+        ]);
+
+        $allLikedComments = [];
+        $result = [];
+
+        foreach ($likedComments as $LC) {
+            if($LC['action_field'] == 'comment') {
+                $likedCommentsIds[] = $LC['comment_id'];
+            
+                if($postId) {
+                    forEach($postFound->comments as $comment) {
+                        $commentIdInsidePost = $comment['_id'];
+    
+                        if($likedCommentId == $commentIdInsidePost) {
+                            $allLikedComments[] = $comment;
+                        }
+                    }
+                }else {
+                    // forEach($likedCommentsIds as $LCS) {
+
+                    //     // forEach($commentsFromPosts as $comment) {
+                    //     //     $commentsIdsFromPost[] = $commentsFromPosts['_id'];
+                    //     // }
+
+                    //     // $commentIdInsidePost = $comment['_id'];
+    
+                    //     // if($LCS == $commentsFromPosts['_id']) {
+                    //     //     // $allLikedComments[] = $comment;
+                    //     //     return 'ok';
+                    //     // }
+                    // }
+
+                    forEach($posts as $post) {
+                        return $post;
+                        // $commentsFromPosts[] = $post->comments;
+                        // return $commentsFromPosts;
+                    }
+                }
+
+                return $commentsFromPosts;
+
+                // return $posts;
+            }
+        }
+
+        // return $likedCommentsIds;
+
+        // forEach($allLikedComments as $likedComment) {
+        //     $likedComment['userLiked'] = true;
+        //     $result[] = $likedComment;
+        // }
+
+        // return $result;
+    }
+
+    function getPostsLikedFromUser($userId, $postId, $method) {
         try {
             // Checa se o id do usuário corresponde ao resultado encontrado
             $objectIdOfPostsIdFromLikesData = [];
 
-            $likesWithUserId = $this->collection->find(['user_id' => new ObjectId($userId)]);
+        //    $likesWithUserId = $this->collection->find(['user_id' => new ObjectId($userId)]);
 
-            foreach ($likesWithUserId as $document) {
-                if($userId == (string) $document['user_id']) {
-                    $objectIdOfPostsIdFromLikesData = [
-                        new ObjectId($document['post_id'])
-                    ];
-                }else exit('mai!');
-            }
+            $pipeline = [
+                [
+                    '$match' => [
+                        'user_id' => new ObjectId($userId),
+                        'action_field' => 'post'
+                    ]
+                ]
+            ];
 
-            // Pega o id id do post gostado para validação
-            $posts = $this->postsCollection->find(['_id' => ['$in' => $objectIdOfPostsIdFromLikesData]]);
+            $likesWithUserId = $this->collection->aggregate($pipeline)->toArray();
 
-            foreach ($posts as $data) {
-                return $data;
-            }
+            if($likesWithUserId) {
+                foreach ($likesWithUserId as $document) {
+                    $objectIdOfPostsIdFromLikesData[] = new ObjectId($document['post_id']);
+                }
+
+                // Pega o id do post gostado para validação
+                try {
+                    $posts = $this->postsCollection->find(['_id' => ['$in' => $objectIdOfPostsIdFromLikesData]]);
+
+                    if($method == 'all') {
+                        foreach ($posts as $data) {
+                            $data['user']['liked'] = true;
+                            $result[] = $data;
+                        }
+
+                        return $result;
+                    }else if($method == 'one') {
+                        if(!empty($objectIdOfPostsIdFromLikesData)) {
+                            forEach($posts as $post) {
+                                if($post['_id'] == $postId) {
+                                    return $post;
+                                }
+                            }
+                        }else return [];
+                    }else return [];
+                } catch (\Throwable $th) {
+                    return [];
+                }
+
+            }else return [];
         }Catch(\Exception $e) {
             throw new \Exception("Não foi possível obter os posts gostados pelo usuário com id: ".$userId.". Erro técnico: ".$e->getMessage(), 500);
         }
@@ -60,56 +153,76 @@ class LikeModel
         $usermodel = new UserModel();
         $userFound = $usermodel->getUserById($user_id);
 
-        $likedPosts = $this->collection->find(['user_id' => $userFound['_id']]);
+        $pipeline = [
+            [
+                '$match' => [
+                    'user_id' => new ObjectId($userFound['_id']),
+                    'post_id' => $postId,
+                    'action_field' => 'post'
+                ]
+            ]
+        ];
 
-        foreach($likedPosts as $LP) {
-            if($LP['post_id'] == $postIdAsString) {
-                throw new Exception("Você já gostou deste post", 409);
-            }
-        }
+        $likedPost = $this->collection->aggregate($pipeline)->toArray();
 
-        try {
+        if($likedPost) {
+            exit("Você já gostou deste post");
+        }else {
             $this->collection->insertOne([
                 'user_id' => $userFound['_id'],
                 'post_id' => $postIdAsString,
                 'action_field' => 'post'
             ]);
 
-            $this->incrementPostLikeNumber($postId);
+            $this->changePostLikeNumber($postId, 'increment');
             return 'Post Gostado';
-        }Catch(Exception $e) {
-            throw new Exception("Falha ao gostar do post", 500);
+        }
+    }
+
+    private function getComment($id) {
+        $postFound = $this->postsCollection->findOne(['comments._id' => new ObjectId($id)], ['comments.$' => 1]);
+
+        forEach($postFound->comments as $comment) {
+            if ($comment['_id'] == $id) {
+                return $comment;
+            }
         }
     }
 
     function likeComment($commentId, $user_id) {
         try {
-            $commentFound = $this->postsCollection->findOne(['comments._id' => new ObjectId($commentId)], ['comments.$' => 1]);
-            $commentFound = $commentFound->comments[0];
+            $commentFound = $this->getComment($commentId);
 
             $usermodel = new UserModel();
             $userFound = $usermodel->getUserById($user_id);
 
-            // Aqui terá validação em loop...
-            $likedComments = $this->collection->find(['user_id' => new ObjectId($userFound['_id'])]);
+            $pipeline = [
+                [
+                    '$match' => [
+                        'user_id' => new ObjectId($userFound['_id']),
+                        'comment_id' => new ObjectId($commentId),
+                        'action_field' => 'comment'
+                    ]
+                ]
+            ];
+    
+            $likedComment = $this->collection->aggregate($pipeline)->toArray();
+        
+            if($likedComment) {
+                exit("Você já gostou deste comentário");
+            }else {
+                try {
+                    $this->collection->insertOne([
+                        'user_id' => $userFound['_id'],
+                        'comment_id' => $commentFound['_id'],
+                        'action_field' => 'comment'
+                    ]);
 
-            foreach($likedComments as $LC) {
-                if($LC['comment_id'] == $commentFound['_id']) {
-                    throw new Exception("Você já gostou deste comentário", 409);
+                    $this->changeCommentLikeNumber($commentFound['post_id'], $commentId, 'increment');
+                    return 'Comentário gostado.';
+                }Catch(Exception $e) {
+                    throw new Exception("Falha ao gostar do comentário.", 500);
                 }
-            }
-
-            try {
-                $this->collection->insertOne([
-                    'user_id' => $userFound['_id'],
-                    'comment_id' => $commentFound['_id'],
-                    'action_field' => 'comment'
-                ]);
-
-//                $this->incrementPostLikeNumber($postId);
-                return 'Comentário gostado.';
-            }Catch(Exception $e) {
-                throw new Exception("Falha ao gostar do comentário.", 500);
             }
         }Catch(\ErrorException $e) {
             throw new \ErrorException("Falha ao gostar do comentário com id: ".$commentId.". Erro técnico: ".$e->getMessage(), 500);
@@ -121,35 +234,86 @@ class LikeModel
         $userFound = $usermodel->getUserById($user_id);
 
         try {
-            $this->collection->deleteOne(['user_id' => $userFound['_id']]);
-            $this->decrementPostLikeNumber($postId);
+            // $this->collection->deleteOne(['user_id' => $userFound['_id']]);
+            $pipeline = [
+                [
+                    '$match' => [
+                        'user_id' => new ObjectId($userFound['_id']),
+                        'post_id' => $postId,
+                        'action_field' => 'post'
+                    ]
+                ]
+            ];
+    
+            $likedPost = $this->collection->aggregate($pipeline)->toArray();
+
+            if($likedPost) {
+                $this->collection->deleteOne(['user_id' => $userFound['_id'], 'post_id' => $postId]);
+                $this->changePostLikeNumber($postId, 'decrement');
+                return 'Gosto retirado';
+            }else return [];
+        }Catch(Exception $e) {
+            throw new Exception("Falha ao retirar like do post", 500);
+        }
+    }
+
+    function deleteLikedComment($commentId, $user_id) {
+        $usermodel = new UserModel();
+        $postmodel = new PostModel();
+        $userFound = $usermodel->getUserById($user_id);
+
+        try {
+            $this->collection->deleteOne(['comment_id' => new ObjectId($commentId)]);
+            $commentFound = $this->getComment($commentId);
+            $this->changeCommentLikeNumber($commentFound['post_id'], $commentId, 'decrement');
             return 'Gosto retirado';
         }Catch(Exception $e) {
-            throw new Exception("Falha ao gostar do post", 500);
+            throw new Exception("Falha ao retirar like do comentário", 500);
         }
     }
 
-    private function decrementPostLikeNumber($postId) {
+    private function changeCommentLikeNumber($postId, $commentId, $method) {
         try {
             return $this->postsCollection->updateOne(
-                ['_id' => new ObjectId($postId)],
-                ['$inc' => ['nrLikes' => -1]],
-                ['upsert' => true]
-            );
-        }catch(Exception $e) {
-            throw new Exception("Falha ao decrementar like do post", 500);
-        }
-    }
-
-    private function incrementPostLikeNumber($postId) {
-        try {
-            return $this->postsCollection->updateOne(
-                ['_id' => new ObjectId($postId)],
-                ['$inc' => ['nrLikes' => 1]],
-                ['upsert' => true]
+                ['_id' => new ObjectId($postId), 'comments._id' => new ObjectId($commentId)],
+                ['$inc' => ['comments.$.likesCount' => ($method == 'increment') ? 1 : (($method == 'decrement') ? -1 : exit('Método de like no comentário não especificado')) ]]
             );
         }catch(Exception $e) {
             throw new Exception("Falha ao incrementar like do post", 500);
         }
     }
+
+    private function changePostLikeNumber($postId, $method) {
+        try {
+            return $this->postsCollection->updateOne(
+                ['_id' => new ObjectId($postId)],
+                ['$inc' => ['likesCount' => ($method == 'increment') ? 1 : (($method == 'decrement') ? -1 : exit('Método de like no post não especificado')) ]]
+            );
+        }catch(Exception $e) {
+            throw new Exception("Falha ao incrementar like do post", 500);
+        }
+    }
+
+    // private function decrementPostLikeNumber($postId) {
+    //     try {
+    //         return $this->postsCollection->updateOne(
+    //             ['_id' => new ObjectId($postId)],
+    //             ['$inc' => ['likesCount' => -1]]
+    //         );
+    //     }catch(Exception $e) {
+    //         throw new Exception("Falha ao decrementar like do post", 500);
+    //     }
+    // }
+
+    // private function incrementPostLikeNumber($postId) {
+    //     try {
+    //         return $this->postsCollection->updateOne(
+    //             ['_id' => new ObjectId($postId)],
+    //             ['$inc' => ['likesCount' => 1]],
+    //             ['upsert' => true]
+    //         );
+    //     }catch(Exception $e) {
+    //         throw new Exception("Falha ao incrementar like do post", 500);
+    //     }
+    // }
 }

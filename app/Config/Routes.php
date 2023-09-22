@@ -31,42 +31,53 @@ $routes->set404Override(function(){
 $routes->group('community', function($routes) {
     // API
 
-    // Método GET
-    $routes->get('posts', 'PostController::getAllPosts');
-    $routes->get('posts/(:segment)', 'PostController::getPost/$1');
-    $routes->get('posts/(:segment)/numberLikes', 'LikeController::getNumberLikesFromPost/$1');
+    // POSTS
 
+    // Método GET
+    $routes->get('posts/(:segment)', 'PostController::getPost/$1');
+    $routes->get('posts', 'PostController::getAllPosts');
     // Método POST
     $routes->post('posts', 'PostController::createPost');
-    $routes->post('posts/(:segment)/comments', 'CommentsController::createComment/$1');
-    $routes->post('login', 'UserController::index');
-
-    // Método DELETE
-    $routes->delete('posts/(:segment)', 'PostController::deletePost/$1');
-    $routes->delete('comments/(:segment)', 'CommentsController::deleteComment/$1');
-
     // Método PUT
     $routes->put('posts/(:segment)', 'PostController::updatePost/$1');
+    // Método DELETE
+    $routes->delete('posts/(:segment)', 'PostController::deletePost/$1');
+
+    // COMENTÁRIOS
+
+    // Método POST
+    $routes->post('posts/(:segment)/comments', 'CommentsController::createComment/$1');
+    // Método PUT
     $routes->put('comments/(:segment)', 'CommentsController::updateComment/$1');
+    // Método DELETE
+    $routes->delete('comments/(:segment)', 'CommentsController::deleteComment/$1');
 
     // Ultilizadores (users)
 
+    // USER
+
     // Método GET
-    $routes->get('posts/liked/(:segment)', 'LikeController::getPostsLikedFromUser/$1');
-    $routes->get('posts/user/(:segment)', 'UserController::getPostsFromUser/$1');
+    $routes->get('posts/user/(:segment)', 'UserController::getPostsByUserId/$1');
     $routes->get('posts/commented/(:segment)', 'UserController::getPostsCommentedByUser/$1');
     $routes->get('posts/saved/(:segment)', 'UserController::getPostsSavedByUser/$1');
-    $routes->get('posts/user/interacted/(:any)', 'UserController::getUserInteractedPosts/$1');
-
+//    $routes->get('posts/user/interacted/(:any)', 'UserController::getUserInteractedPosts/$1');
     // Método POST
     $routes->post('posts/saved/(:segment)', 'UserController::savePost/$1');
-    $routes->post('posts/liked/(:segment)', 'LikeController::likePost/$1');
-    $routes->post('comments/liked/(:segment)', 'LikeController::likeComment/$1');
-
+    $routes->post('login', 'UserController::index');
+    $routes->post('user', 'UserController::getUserInfo/$1/$2');
     // Método DELETE
     $routes->delete('posts/saved/(:segment)', 'UserController::deleteSavedPost/$1');
+
+    // LIKE
+    // Método GET
+    $routes->get('comments/liked/(:segment)', 'LikeController::getCommentsLikedFromUser/$1');
+    $routes->get('posts/liked/(:segment)', 'LikeController::getPostsLikedFromUser/$1');
+    // Método POST
+    $routes->post('posts/liked/(:segment)', 'LikeController::likePost/$1');
+    $routes->post('comments/liked/(:segment)', 'LikeController::likeComment/$1');
+    // Método DELETE
     $routes->delete('posts/liked/(:segment)', 'LikeController::deleteLikedPost/$1');
-    $routes->delete('comments/liked/(:segment)', 'CommentsController::deleteLikedComment/$1');
+    $routes->delete('comments/liked/(:segment)', 'LikeController::deleteLikedComment/$1');
 
     // API ADMIN (Similar ao usuário, mas dividido especialmente para os admins
     // As operações de posts são similares ao do usuário normal (rota, parametros e payload).
@@ -75,10 +86,12 @@ $routes->group('community', function($routes) {
 
     // Método GET
     $routes->get('themes', 'ThemeController::getAllThemes');
-
     // Método POST
     $routes->post('themes', 'ThemeController::createTheme');
-
+    // Método PUT
+    $routes->put('themes/(:any)', 'ThemeController::updateTheme/$1');
+    // Método DELETE
+    $routes->delete('themes/(:any)', 'ThemeController::deleteTheme/$1');
 });
 
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps

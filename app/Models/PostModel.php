@@ -8,11 +8,13 @@ use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 use Exception;
+use PhpParser\Node\Expr\Cast\Object_;
 
 class PostModel
 {
     private Collection $collection;
     private Collection $usersCollection;
+    private Collection $themesCollection;
 
     /**
      * @throws Exception
@@ -21,7 +23,8 @@ class PostModel
     {
         $database = new DatabaseConnector();
         $this->collection = $database->getCollection("posts");
-        $this->usersCollection = $database->getCollection("users");
+        $this->usersCollection = $database->getCollection("Users");
+        $this->themesCollection = $database->getCollection("themes");
     }
 
     private function getPostIdAsString($postId) {
@@ -44,10 +47,41 @@ class PostModel
 
     function getPost($id)
     {
-        if ($id) try {
+        try {
             return $this->collection->findOne(['_id' => new ObjectId($id)]);
         } catch (Exception $e) {
             throw new Exception("O post especificado com id: ".$id." não existe", 500);
+        }
+    }
+
+    function getInteractedPostFromUserId($postId, $userId) {
+        try {
+            $likemodel = new LikeModel();
+            $post = $this->getPost($postId);
+            $postSavedByUser = $this->getPostsSavedByUser($userId, $postId, 'one');
+            $postLikedByUser = $likemodel->getPostsLikedFromUser($userId, $postId, 'one');
+
+            $postSavedByUser && $post['user']['saved'] = true;
+            $postLikedByUser && $post['user']['liked'] = true;
+
+            if(isset($post->comments)) {
+                $commentsId = [];
+                $comments = $post->comments;
+                forEach($comments as $comment) $commentsId[] = $comment['_id'];
+                $likedComments = $likemodel->getLikedComments($postId, $userId);
+
+                if($likedComments) {
+                    forEach($comments as $c) {
+                        forEach($likedComments as $lc) {
+                            $lc['_id'] == $c['_id'] && $c['userLiked'] = true;
+                        }
+                    }
+                }
+            }else return $post;
+
+            return $post;
+        } catch (Exception $e) {
+            throw new Exception("Ocorreu um erro. Erro técnico: ".$e->getMessage(), 500);
         }
     }
 
@@ -74,26 +108,39 @@ class PostModel
         }
     }
 
-    function createPost($json)
-    {
+    function createPost($json) {
         // Obrigatório
         $title = $json['title'];
         $content = $json['content'];
 
-        // Opcional
-        $districtName = $json['districtName'];
-        $restricted = $json['restricted'];
-
         if ($title && $content) {
             try {
                 $now = new UTCDateTime();
+                $userFound = $this->usersCollection->findOne(['_id' => new ObjectId($json['author_id'])]);
+                $themeFound = $this->themesCollection->findOne(['_id' => new ObjectId($json['theme_id'])]);
 
                 $this->collection->insertOne([
-                    'date' => $now,
+                    'createdAt' => $now,
                     'title' => $title,
                     'content' => $content,
-                    'districtName' => $districtName,
-                    'restricted' => $restricted
+                    'author' => [
+                        'id' => $userFound['_id'],
+                        'name' => $userFound['name'],
+                        'photo' => $userFound['photo']
+                    ],
+                    'user' => [
+                        'liked' => false,
+                        'saved' => false
+                    ],
+                    'theme' => [
+                        'id' => $themeFound['_id'],
+                        'name' => $themeFound['name']
+                    ],
+                    'isPublic' => $json['public'] ?? true,
+                    'likesCount' => 0,
+                    'comments' => [],
+                    'images' => [],
+                    'videos' => []
                 ]);
 
                 return 'Post adicionado com sucesso';
@@ -107,18 +154,19 @@ class PostModel
 
     function getPostsByUserId($userId): array
     {
-        if ($userId) try {
-            $data = [];
-            $postsByUserId = $this->collection->find(['user_id' => $userId]);
+        $pipeline = [
+            [
+                '$match' => [
+                    'author.id' => new ObjectId($userId)
+                ]
+            ]
+        ];
 
-            foreach ($postsByUserId as $document) {
-                $data[] = $document;
-            }
+        $posts = $this->collection->aggregate($pipeline)->toArray();
 
-            return $data;
-        } catch (Exception $e) {
-            throw new Exception('Não foi possível obter posts do usuário com id: '.$userId, 500);
-        }
+        if($posts) {
+            return $posts;
+        }else return [];
     }
 
     function deletePost($postId)
@@ -147,11 +195,13 @@ class PostModel
 
                 if ($title && $content) {
                     try {
-                        $this->collection->updateOne([
-                            '_id' => $postFound['_id'],
-                            'title' => $postFound['title'],
-                            'content' => $postFound['content']
-                        ], ['$set' => ['title' => $title, 'content' => $content]]
+                        $this->collection->updateOne(
+                            ['_id' => $postFound['_id']],
+                            ['$set' => [
+                                'title' => $title,
+                                'content' => $content,
+                                'isPublic' => $json['public']
+                            ]]
                         );
 
                         return 'Post atualizado com sucesso';
@@ -172,7 +222,7 @@ class PostModel
             $pipeline = [
                 [
                     '$match' => [
-                        'comments.user_id' => new ObjectId($userId)
+                        'comments.author.id' => new ObjectId($userId)
                     ]
                 ]
             ];
@@ -183,68 +233,122 @@ class PostModel
         }
     }
 
-    function getPostsSavedByUser($userId) {
+    function getPostsSavedByUser($userId, $postId, $method) {
         try {
-            try {
-                $userFound = $this->usersCollection->findOne(['_id' => new ObjectId($userId)]);
-                $savedPostsByUserFound = $userFound['savedPosts'];
+            $userFound = $this->usersCollection->findOne(['_id' => new ObjectId($userId)]);
+            $savedPostsByUserFound = $userFound['savedPosts'];
 
-                $savedPostsIds = [];
+            $savedPostsIds = [];
 
+            if(count($savedPostsByUserFound) !== 0) {
                 forEach($savedPostsByUserFound as $savedPosts) {
-                    $savedPostsIds = [
-                        new ObjectId($savedPosts['post_id'])
-                    ];
+                    $savedPostsIds[] = new ObjectId($savedPosts['post_id']);
                 }
-            }Catch(\ErrorException $e) {
-                throw new \ErrorException('O usuário não possui posts salvos. Erro técnico: '.$e->getMessage(), 500);
+            }else return [];
+
+            if($method == 'all') {
+                $posts = $this->collection->find(['_id' => ['$in' => $savedPostsIds]]);
+
+                foreach ($posts as $data) {
+                    $data['user']['saved'] = true;
+                    $result[] = $data;
+                }
+
+                return $result;
+            }else if($method == 'one') {
+                $posts = $this->collection->find(['_id' => ['$in' => $savedPostsIds]]);
+
+                foreach ($posts as $data) {
+                    if($data['_id'] == $postId) {
+                        $data['user']['saved'] = true;
+                        return $data;
+                    }
+                }
             }
+            
+            // try {
+
+
+                // if(count($savedPostsByUserFound) !== 0) {
+                //     forEach($savedPostsByUserFound as $savedPosts) {
+                //         $savedPostsIds[] = new ObjectId($savedPosts['post_id']);
+                //     }
+                // }else return [];
+
+                // if($method == 'all') {
+                //     $posts = $this->collection->find(['_id' => ['$in' => $savedPostsIds]]);
+
+                //     foreach ($posts as $data) {
+                //         $data['user']['saved'] = true;
+                //         $result[] = $data;
+                //     }
+
+                //     return $result;
+                // }else if($method == 'one') {
+                //     $posts = $this->collection->find(['_id' => ['$in' => $savedPostsIds]]);
+
+                //     foreach ($posts as $data) {
+                //         if($data['_id'] == $postId) {
+                //             $data['user']['saved'] = true;
+                //             return $data;
+                //         }
+                //     }
+                // }
+            // }Catch(\ErrorException $e) {
+            //     throw new \ErrorException('O usuário não possui posts salvos. Erro técnico: '.$e->getMessage(), 500);
+            // }
 
             // Procurando por ids dos posts para verificação
 
-            try {
-                // Uso do operador $in para corresponder documentos com _id no array
-                $matchedPosts = $this->collection->find([
-                    '_id' => ['$in' => $savedPostsIds]
-                ]);
+//             try {
+//                 // Uso do operador $in para corresponder documentos com _id no array
+// //                $matchedPosts = $this->collection->find(['_id' => ['$in' => $savedPostsByUserFound]]);
+// //                return $matchedPosts;
 
-                foreach ($matchedPosts as $document) {
-                    return $document;
-                }
-            } catch (Exception $ex) {
-                throw new Exception("Erro ao obter todos os posts que são correspondentes com os posts salvados do user", 500);
-            }
+// //                foreach ($matchedPosts as $data) {
+// //                    return $data;
+// ////                    if($savedPostsIds == (string) $data['_id']['$oid']) {
+// ////
+// ////                    }
+// //
+// ////
+// ////                    }
+// ////                    $data['user']['saved'] = true;
+// ////                    return [$data];
+// //                }
+//             } catch (Exception $ex) {
+//                 throw new Exception("Erro ao obter todos os posts que são correspondentes com os posts salvados do user", 500);
+//             }
         }Catch(\InvalidArgumentException $e) {
-            throw new InvalidArgumentException('Parametro especificado do tipo não esperado. Erro técnico: '.$e->getMessage(), 500);
+            throw new InvalidArgumentException('Erro ao obter todos os posts que são correspondentes com os posts salvados do user. Erro técnico: '.$e->getMessage(), 500);
         }
     }
 
     function getPostsLikedByUser($userId) {
-        exit('ok');
-//        $userFound = $this->usersCollection->findOne(['_id' => new ObjectId($userId)]);
-//        $likedPostsByUserFound = $userFound['likedPosts'];
-//
-//        $likedPostsIds = [];
-//
-//        forEach($likedPostsByUserFound as $likedPosts) {
-//            $likedPostsIds = [
-//                new ObjectId($likedPosts['post_id'])
-//            ];
-//        }
-//
-//        // Procurando por ids dos posts para verificação
-//
-//        try {
-//            // Uso do operador $in para corresponder documentos com _id no array
-//            $matchedPosts = $this->collection->find([
-//                '_id' => ['$in' => $likedPostsIds]
-//            ]);
-//
-//            foreach ($matchedPosts as $document) {
-//                return $document;
-//            }
-//        } catch (Exception $ex) {
-//            throw new Exception("Erro ao obter todos os posts que são correspondentes com os posts salvados do user", 500);
-//        }
+       $userFound = $this->usersCollection->findOne(['_id' => new ObjectId($userId)]);
+       $likedPostsByUserFound = $userFound['likedPosts'];
+
+       $likedPostsIds = [];
+
+       forEach($likedPostsByUserFound as $likedPosts) {
+           $likedPostsIds = [
+               new ObjectId($likedPosts['post_id'])
+           ];
+       }
+
+       // Procurando por ids dos posts para verificação
+
+       try {
+           // Uso do operador $in para corresponder documentos com _id no array
+           $matchedPosts = $this->collection->find([
+               '_id' => ['$in' => $likedPostsIds]
+           ]);
+
+           foreach ($matchedPosts as $document) {
+               return $document;
+           }
+       } catch (Exception $ex) {
+           throw new Exception("Erro ao obter todos os posts que são correspondentes com os posts salvados do user", 500);
+       }
     }
 }

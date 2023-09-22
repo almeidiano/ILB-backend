@@ -16,18 +16,14 @@ class CommentModel
     function __construct() {
         $database = new DatabaseConnector();
         $this->collection = $database->getCollection("posts");
-        $this->userCollection = $database->getCollection("users");
-//        $connection = new DatabaseConnector();
-//        $database = $connection->getDatabase();
-//        $this->collection = $database->posts;
-//        $this->userCollection = $database->users;
+        $this->userCollection = $database->getCollection("Users");
     }
 
-    public function createComment($postId, $json, $allImages) {
+    public function createComment($postId, $json) {
         if($postId) {
             if($json) {
                 // Conteúdo do post obrigatório
-                $content = $json['content'];
+                $content = $json['text'];
 
                 if($content) {
                     try {
@@ -39,19 +35,20 @@ class CommentModel
                         $userFound = $this->userCollection->findOne(['_id' => new ObjectId($json['user_id'])]);
 
                         if($postFound) {
-
                             $now = new \MongoDB\BSON\UTCDateTime();
 
                             $newComment = [
                                 '_id' => new \MongoDB\BSON\ObjectId(),
-                                'date' => $now,
-                                'content' => $content,
+                                'createdAt' => $now,
+                                'text' => $content,
                                 'post_id' => $postFound['_id'],
-                                'user_id' => $userFound['_id'],
+                                'author' => [
+                                    'id' => $userFound['_id'],
+                                    'name' => $userFound['name'],
+                                    'photo' => 'fotodousuario.png'
+                                ],
                                 'userLiked' => false,
-                                'userName' => $userFound['name'],
-                                'userPhoto' => 'fotodousuario.png',
-                                'images' => $allImages
+                                'likesCount' => 0
                             ];
 
                             try{
@@ -60,7 +57,7 @@ class CommentModel
                                     ['$push' => ['comments' => $newComment]]
                                 );
 
-                                return 'Comentário adicionado com sucesso';
+                                return $newComment;
                             }Catch(Exception $e) {
                                 throw new Exception("Não foi possivel adicionar comentário ao post com id '.$postId.' Erro técnico: ".$e->getMessage(), 500);                            }
                         }
@@ -87,7 +84,7 @@ class CommentModel
 
             $this->collection->updateOne(
                 ['comments._id' => $commentFound['_id']],
-                ['$set' => ['comments.$.content' => $content]]
+                ['$set' => ['comments.$.text' => $content]]
             );
 
             return 'Comentário editado com sucesso';

@@ -20,12 +20,14 @@ class UserController extends BaseController
     }
 
     //Read
-    public function getPostsFromUser($userId): \CodeIgniter\HTTP\ResponseInterface {
-        if($userId) {
+    public function getInteractedPostFromUserId($userId, $postId): \CodeIgniter\HTTP\ResponseInterface {
             $postmodel = new PostModel();
-            $postsByUserId = $postmodel->getPostsByUserId($userId);
-            return $this->response->setJSON($postsByUserId);
-        }
+            return $this->response->setJSON($postmodel->getInteractedPostFromUserId($userId, $postId));
+    }
+
+    public function getPostsByUserId($userId) {
+        $postmodel = new PostModel();
+        return $this->response->setJSON($postmodel->getPostsByUserId($userId));
     }
     public function index(): \CodeIgniter\HTTP\ResponseInterface
     {
@@ -39,10 +41,17 @@ class UserController extends BaseController
             return $this->response->setJSON($user);
         }
     }
-
-    public function getPostsSavedByUser($userId): \CodeIgniter\HTTP\ResponseInterface {
+    public function getUserInfo($name, $email) {
+        if($this->request->is('post')) {
+            $usermodel = new UserModel();
+            $name = $this->request->getVar("name");
+            $email = $this->request->getVar("email");
+            return $this->response->setJSON($usermodel->getUserByNameAndEmail($name, $email));
+        }
+    }
+    public function getPostsSavedByUser($userId) {
         $postmodel = new PostModel();
-        return $this->response->setJSON($postmodel->getPostsSavedByUser($userId));
+        return $this->response->setJSON($postmodel->getPostsSavedByUser($userId, null, 'all'));
     }
 
     public function getPostsCommentedByUser($userId): \CodeIgniter\HTTP\ResponseInterface {

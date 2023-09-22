@@ -7,12 +7,7 @@ use App\Models\LikeModel;
 
 class LikeController extends BaseController
 {
-    public function getPostsLikedFromUser($userId): \CodeIgniter\HTTP\ResponseInterface
-    {
-        $likeModel = new LikeModel();
-        return $this->response->setJSON($likeModel->getPostsLikedFromUser($userId));
-    }
-
+    //Create
     public function likePost($postId): \CodeIgniter\HTTP\ResponseInterface {
         if($this->request->is('post')) {
             $user_id = $this->request->getVar("user_id");
@@ -29,6 +24,26 @@ class LikeController extends BaseController
         }
     }
 
+    // Read
+    public function getPostsLikedFromUser($userId): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $likeModel = new LikeModel();
+        return $this->response->setJSON($likeModel->getPostsLikedFromUser($userId, null, 'all'));
+    }
+    public function getCommentsLikedFromUser($userId): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $likeModel = new LikeModel();
+        return $this->response->setJSON($likeModel->getLikedComments(null, $userId));
+    }
+
+    // Delete
+    public function deleteLikedComment($commentId): \CodeIgniter\HTTP\ResponseInterface {
+        if($this->request->is('delete')) {
+            $user_id = $this->request->getVar("user_id");
+            $likemodel = new LikeModel();
+            return $this->response->setJSON($likemodel->deleteLikedComment($commentId, $user_id));
+        }
+    }
     public function deleteLikedPost($postId): \CodeIgniter\HTTP\ResponseInterface {
         if($this->request->is('delete')) {
             $user_id = $this->request->getVar("user_id");

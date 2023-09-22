@@ -18,7 +18,7 @@ class UserModel
 
     function __construct() {
         $connection = new DatabaseConnector();
-        $this->collection = $connection->getCollection("users");
+        $this->collection = $connection->getCollection("Users");
     }
 
     /**
@@ -31,22 +31,13 @@ class UserModel
         return (string) $postFound['_id'];
     }
 
-    function login($email, $password): array
+    function login($email, $password)
     {
         if($email && $password) {
-            $jwtKey = bin2hex(random_bytes(32));
-            $jwtPayload = $this->collection->findOne(['email' => $email, 'password' => $password]);
-            $jwt = Services::jwt()->encode([$jwtPayload], $jwtKey, 'HS256');
-
-            if($jwtPayload) {
-                return [
-                    'user' => $jwtPayload,
-                    'accessToken' => $jwt
-                ];
-            }else {
-                return [
-                    'error' => true
-                ];
+            try {
+                return $this->collection->findOne(['email' => $email, 'password' => $password]);
+            }Catch(Exception $e) {
+                throw new Exception('Login ou senha incorretos', 401);
             }
         }
     }
@@ -54,6 +45,14 @@ class UserModel
         if($userId) try {
             return $this->collection->findOne(['_id' => new ObjectId($userId)]);
         }catch(Exception $e) {
+            throw new Exception("Erro ao obter usuário. Erro técnico: ".$e->getMessage(), 500);
+        }
+    }
+
+    function getUserByNameAndEmail($name, $email) {
+        try {
+            return $this->collection->findOne(['name' => $name, 'email' => $email]);
+        }Catch(Exception $e) {
             throw new Exception("Erro ao obter usuário. Erro técnico: ".$e->getMessage(), 500);
         }
     }
