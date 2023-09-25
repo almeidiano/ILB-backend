@@ -16,9 +16,27 @@ class PostController extends BaseController
     public function createPost()
     {
         if($this->request->is('post')) {
-            $json = $this->request->getVar(["title", "content", "public", "theme_id", "author_id"]);
-            $postmodel = new PostModel();
-            return $this->response->setJSON($postmodel->createPost($json));
+
+            // Validação
+            $validateImages = $this->validate([
+                'image' => 'uploaded[image]|max_size[image,5000]|is_image[image]'
+            ]);
+
+            // Imagens
+            if($validateImages) {
+                $image = $this->request->getFile('image');
+
+                if (! $image->hasMoved()) {
+                    $imageName = $image->getRandomName();
+                    $image->move(ROOTPATH.'uploads/images', $imageName);
+                    $imagePath = base_url().'uploads/images/'.$imageName;
+
+                    $json = $this->request->getVar(["title", "content", "public", "theme_id", "author_id"]);
+                    $postmodel = new PostModel();
+                    return $this->response->setJSON($postmodel->createPost($json, $imagePath));
+                }
+
+            }
         }
     }
 

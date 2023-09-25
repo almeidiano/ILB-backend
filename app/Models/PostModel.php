@@ -108,7 +108,7 @@ class PostModel
         }
     }
 
-    function createPost($json) {
+    function createPost($json, $imagePath) {
         // Obrigatório
         $title = $json['title'];
         $content = $json['content'];
@@ -124,7 +124,7 @@ class PostModel
                     'title' => $title,
                     'content' => $content,
                     'author' => [
-                        'id' => $userFound['_id'],
+                        'id' => $json['author_id'],
                         'name' => $userFound['name'],
                         'photo' => $userFound['photo']
                     ],
@@ -139,13 +139,13 @@ class PostModel
                     'isPublic' => $json['public'] ?? true,
                     'likesCount' => 0,
                     'comments' => [],
-                    'images' => [],
+                    'image' => $imagePath,
                     'videos' => []
                 ]);
 
                 return 'Post adicionado com sucesso';
             } catch (Exception $e) {
-                throw new Exception("Ocorreu um erro ao adicionar post. Erro técnico: " . $e->getMessage(), 500);
+                return "Ocorreu um erro ao adicionar post. Erro técnico: ".$e->getMessage();
             }
         } else {
             throw new Exception("Titulo e conteúdo não especificados", 401);

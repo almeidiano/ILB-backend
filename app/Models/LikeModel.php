@@ -25,67 +25,49 @@ class LikeModel
     function getLikedComments($postId, $userId) {
         $postmodel = new PostModel();
 
+        $pipeline = [
+            [
+                '$match' => [
+                    'user_id' => new ObjectId($userId),
+                    'action_field' => 'comment'
+                ]
+            ]
+        ];
+
+        $allLikedCommentsWithUserId = $this->collection->aggregate($pipeline)->toArray();
+
         if($postId) {
             $postFound = $postmodel->getPost($postId);
-        }else {
-            $posts = $postmodel->getAllPosts();
-        }
-
-        $likedComments = $this->collection->find([
-            'user_id' => new ObjectId($userId)
-        ]);
-
-        $allLikedComments = [];
-        $result = [];
-
-        foreach ($likedComments as $LC) {
-            if($LC['action_field'] == 'comment') {
-                $likedCommentsIds[] = $LC['comment_id'];
-            
-                if($postId) {
-                    forEach($postFound->comments as $comment) {
-                        $commentIdInsidePost = $comment['_id'];
     
-                        if($likedCommentId == $commentIdInsidePost) {
-                            $allLikedComments[] = $comment;
-                        }
-                    }
-                }else {
-                    // forEach($likedCommentsIds as $LCS) {
+            $allLikedComments = [];
+            $allLikedCommentsFromAllPosts = [];
+            $result = [];
 
-                    //     // forEach($commentsFromPosts as $comment) {
-                    //     //     $commentsIdsFromPost[] = $commentsFromPosts['_id'];
-                    //     // }
-
-                    //     // $commentIdInsidePost = $comment['_id'];
-    
-                    //     // if($LCS == $commentsFromPosts['_id']) {
-                    //     //     // $allLikedComments[] = $comment;
-                    //     //     return 'ok';
-                    //     // }
-                    // }
-
-                    forEach($posts as $post) {
-                        return $post;
-                        // $commentsFromPosts[] = $post->comments;
-                        // return $commentsFromPosts;
+            foreach ($allLikedCommentsWithUserId as $LC) {
+                forEach($postFound->comments as $postComment) {
+                    if($postComment['_id'] == $LC['comment_id']) {
+                        $allLikedComments[] = $postComment;
+                        break;
                     }
                 }
-
-                return $commentsFromPosts;
-
-                // return $posts;
             }
+
+            return $allLikedComments;
+        }else {
+            $posts = $postmodel->getAllPosts();
+
+            forEach($posts as $post) {
+                foreach ($allLikedCommentsWithUserId as $LC) {
+                    forEach($post->comments as $commentsFromPosts) {
+                        if($LC['comment_id'] == $commentsFromPosts['_id']) {
+                            $allLikedCommentsFromAllPosts[] = $commentsFromPosts;
+                        }
+                    }
+                }
+            }
+
+            return $allLikedCommentsFromAllPosts;
         }
-
-        // return $likedCommentsIds;
-
-        // forEach($allLikedComments as $likedComment) {
-        //     $likedComment['userLiked'] = true;
-        //     $result[] = $likedComment;
-        // }
-
-        // return $result;
     }
 
     function getPostsLikedFromUser($userId, $postId, $method) {
