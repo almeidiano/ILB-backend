@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\LikeModel;
-use App\Models\PostModel;
+use App\Models\PostModel;   
 
 class PostController extends BaseController
 {
@@ -28,8 +28,27 @@ class PostController extends BaseController
 
                 if (! $image->hasMoved()) {
                     $imageName = $image->getRandomName();
-                    $image->move(ROOTPATH.'uploads/images', $imageName);
                     $imagePath = base_url().'uploads/images/'.$imageName;
+                    
+                    try {
+                        //Image manipulation
+                        $imageManager = \Config\Services::image()
+                        ->withFile($image)
+                        ->resize(550, 550, true, 'height')
+                        // ->text('Copyright 2017 My Photo Co', [
+                        //     'color'      => '#fff',
+                        //     'opacity'    => 0.5,
+                        //     'withShadow' => true,
+                        //     'hAlign'     => 'center',
+                        //     'vAlign'     => 'bottom',
+                        //     'fontSize'   => 20,
+                        // ])
+                        ->save(ROOTPATH.'uploads/images/'.$imageName);
+                    } catch (\Throwable $th) {
+                        exit('Ocorreu um erro ao manipular a imagem: '.$th->getMessage());
+                    }
+
+                    // $image->move(ROOTPATH.'uploads/images', $imageName);
 
                     $json = $this->request->getVar(["title", "content", "public", "theme_id", "author_id"]);
                     $postmodel = new PostModel();
@@ -44,6 +63,13 @@ class PostController extends BaseController
     public function getAllPosts() {
         $postmodel = new PostModel();
         $posts = $postmodel->getAllPosts();
+        return $this->response->setJSON($posts);
+    }
+
+    public function getAllRecommendedPosts() {
+        $postmodel = new PostModel();
+        $posts = $postmodel->getAllRecommendedPosts();
+
         return $this->response->setJSON($posts);
     }
 
@@ -66,9 +92,54 @@ class PostController extends BaseController
     //Update
     public function updatePost($postId) {
         if($this->request->is('put')) {
-            $json = $this->request->getVar(["title", "content", "public"]);
-            $postmodel = new PostModel();
-            return $this->response->setJSON($postmodel->updatePost($postId, $json));
+            // Validação
+            $validateImages = $this->validate([
+                'image' => 'uploaded[image]|max_size[image,5000]|is_image[image]'
+            ]);
+
+            global $imagePath;
+
+            if($validateImages) {
+                $image = $this->request->getFile('image');
+                if (! $image->hasMoved()) {
+                    $imageName = $image->getRandomName();
+                    $imagePath = ROOTPATH.'uploads/images/'.$imageName;
+    
+                    try {
+                        //Image manipulation
+                        $imageManager = \Config\Services::image()
+                        ->withFile($image)
+                        ->resize(550, 550, true, 'height')
+                        // ->text('Copyright 2017 My Photo Co', [
+                        //     'color'      => '#fff',
+                        //     'opacity'    => 0.5,
+                        //     'withShadow' => true,
+                        //     'hAlign'     => 'center',
+                        //     'vAlign'     => 'bottom',
+                        //     'fontSize'   => 20,
+                        // ])
+                        ->save(ROOTPATH.'uploads/images/'.$imageName);
+
+                        try {
+                            $json = $this->request->getVar(["title", "content", "public"]);
+                            $postmodel = new PostModel();
+                            return $this->response->setJSON($postmodel->updatePost($postId, $json, $imagePath));  
+                        } catch (\Throwable $th) {
+                            exit('erro: '.$th->getMessage());
+                        } 
+                    } catch (\Throwable $th) {
+                        exit('Ocorreu um erro ao manipular a imagem: '.$th->getMessage());
+                    }             
+                }
+            }
+            
+            try {
+                $json = $this->request->getVar(["title", "content", "public"]);
+                $postmodel = new PostModel();
+                return $this->response->setJSON($postmodel->updatePost($postId, $json, $imagePath));  
+            } catch (\Throwable $th) {
+                exit('erro: '.$th->getMessage());
+            } 
         }
     }
 

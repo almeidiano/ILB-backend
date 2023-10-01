@@ -34,6 +34,7 @@ $routes->group('community', function($routes) {
     // POSTS
 
     // Método GET
+    $routes->get('posts/recommended', 'PostController::getAllRecommendedPosts');
     $routes->get('posts/(:segment)', 'PostController::getPost/$1');
     $routes->get('posts', 'PostController::getAllPosts');
     // Método POST
@@ -85,9 +86,14 @@ $routes->group('community', function($routes) {
     //Temas
 
     // Método GET
+    $routes->get('themes/pendingUsers', 'ThemeController::getAllPendingUsersFromThemes');
+    $routes->get('themes/(:segment)/posts/(:segment)', 'ThemeController::getPostByThemeId/$1/$2');
+    $routes->get('themes/(:segment)/posts', 'ThemeController::getPostsByThemeId/$1');
+    $routes->get('themes/(:segment)', 'ThemeController::getTheme/$1');
     $routes->get('themes', 'ThemeController::getAllThemes');
     // Método POST
     $routes->post('themes', 'ThemeController::createTheme');
+    $routes->post('themes/(:segment)/enter', 'ThemeController::enterTheme/$1');
     // Método PUT
     $routes->put('themes/(:any)', 'ThemeController::updateTheme/$1');
     // Método DELETE

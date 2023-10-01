@@ -108,6 +108,47 @@ class PostModel
         }
     }
 
+    function getAllRecommendedPosts(): array
+    {
+        try {
+            $posts = [];
+            $cursor = $this->collection->aggregate([
+                [
+                    '$project' => [
+                        '_id' => 1,
+                        'createdAt' => 1,
+                        'title' => 1,
+                        'content' => 1,
+                        'author' => 1,
+                        'user' => 1,
+                        'theme' => 1,
+                        'isPublic' => 1,
+                        'likesCount' => ['$sum' => '$likesCount'], // Calcula o tamanho do array de likes
+                        'comments' => 1,
+                        'image' => 1
+                    ]
+                ],
+                [
+                    '$sort' => [
+                        'likes' => -1, // Ordem decrescente por likes
+                        'comments' => -1 // Ordem decrescente por comentários
+                    ]
+                ],
+                [
+                    '$limit' => 5 // Obtém os top 10 posts
+                ]
+            ]);
+
+            foreach ($cursor as $document) {
+                $recommendedPosts[] = $document;
+            }
+
+            return $recommendedPosts;
+        } catch (Exception $ex) {
+            throw new Exception("Erro ao obter todos os posts recomendados. Erro técnico: ".$ex->getMessage(), 500);
+        }
+    }
+
     function createPost($json, $imagePath) {
         // Obrigatório
         $title = $json['title'];
@@ -139,8 +180,7 @@ class PostModel
                     'isPublic' => $json['public'] ?? true,
                     'likesCount' => 0,
                     'comments' => [],
-                    'image' => $imagePath,
-                    'videos' => []
+                    'image' => $imagePath
                 ]);
 
                 return 'Post adicionado com sucesso';
@@ -179,38 +219,36 @@ class PostModel
         }
     }
 
-    function updatePost($postId, $json)
-    {
-        if ($postId) {
-            try {
-                $postFound = $this->collection->findOne(['_id' => new ObjectId($postId)]);
-            } catch (Exception $e) {
-                throw new Exception("Não foi possível obter post para atualização com o id ' .$postId. ' Erro técnico: " . $e->getMessage(), 500);
-            }
+    function updatePost($postId, $json, $imagePath) {
+        try {
+            $postFound = $this->collection->findOne(['_id' => new ObjectId($postId)]);
+        } catch (Exception $e) {
+            exit("Não foi possível obter post para atualização com o id ' .$postId. ' Erro técnico: " . $e->getMessage());
+        }
 
-            if ($postFound) {
-                // Obrigatório
-                $title = $json['title'];
-                $content = $json['content'];
+        if ($postFound) {
+            // Obrigatório
+            $title = $json['title'];
+            $content = $json['content'];
 
-                if ($title && $content) {
-                    try {
-                        $this->collection->updateOne(
-                            ['_id' => $postFound['_id']],
-                            ['$set' => [
-                                'title' => $title,
-                                'content' => $content,
-                                'isPublic' => $json['public']
-                            ]]
-                        );
+            if ($title && $content) {
+                try {
+                    $this->collection->updateOne(
+                        ['_id' => $postFound['_id']],
+                        ['$set' => [
+                            'title' => $title,
+                            'content' => $content,
+                            'isPublic' => $json['public'],
+                            'image' => $imagePath
+                        ]]
+                    );
 
-                        return 'Post atualizado com sucesso';
-                    } catch (Exception $e) {
-                        throw new Exception("Não foi possível atualizar post com o id ' . $postId . ' Erro técnico: " . $e->getMessage(), 500);
-                    }
-                } else {
-                    throw new Exception("Titulo ou conteúdo não especificados", 401);
+                    return 'Post atualizado com sucesso';
+                } catch (Exception $e) {
+                    exit("Não foi possível atualizar post com o id '.$postId.' Erro técnico: " . $e->getMessage());
                 }
+            } else {
+                exit("Titulo ou conteúdo não especificados");
             }
         }
     }
@@ -265,60 +303,6 @@ class PostModel
                     }
                 }
             }
-            
-            // try {
-
-
-                // if(count($savedPostsByUserFound) !== 0) {
-                //     forEach($savedPostsByUserFound as $savedPosts) {
-                //         $savedPostsIds[] = new ObjectId($savedPosts['post_id']);
-                //     }
-                // }else return [];
-
-                // if($method == 'all') {
-                //     $posts = $this->collection->find(['_id' => ['$in' => $savedPostsIds]]);
-
-                //     foreach ($posts as $data) {
-                //         $data['user']['saved'] = true;
-                //         $result[] = $data;
-                //     }
-
-                //     return $result;
-                // }else if($method == 'one') {
-                //     $posts = $this->collection->find(['_id' => ['$in' => $savedPostsIds]]);
-
-                //     foreach ($posts as $data) {
-                //         if($data['_id'] == $postId) {
-                //             $data['user']['saved'] = true;
-                //             return $data;
-                //         }
-                //     }
-                // }
-            // }Catch(\ErrorException $e) {
-            //     throw new \ErrorException('O usuário não possui posts salvos. Erro técnico: '.$e->getMessage(), 500);
-            // }
-
-            // Procurando por ids dos posts para verificação
-
-//             try {
-//                 // Uso do operador $in para corresponder documentos com _id no array
-// //                $matchedPosts = $this->collection->find(['_id' => ['$in' => $savedPostsByUserFound]]);
-// //                return $matchedPosts;
-
-// //                foreach ($matchedPosts as $data) {
-// //                    return $data;
-// ////                    if($savedPostsIds == (string) $data['_id']['$oid']) {
-// ////
-// ////                    }
-// //
-// ////
-// ////                    }
-// ////                    $data['user']['saved'] = true;
-// ////                    return [$data];
-// //                }
-//             } catch (Exception $ex) {
-//                 throw new Exception("Erro ao obter todos os posts que são correspondentes com os posts salvados do user", 500);
-//             }
         }Catch(\InvalidArgumentException $e) {
             throw new InvalidArgumentException('Erro ao obter todos os posts que são correspondentes com os posts salvados do user. Erro técnico: '.$e->getMessage(), 500);
         }
@@ -350,5 +334,27 @@ class PostModel
        } catch (Exception $ex) {
            throw new Exception("Erro ao obter todos os posts que são correspondentes com os posts salvados do user", 500);
        }
+    }
+
+    function getPostByThemeId($postId, $themeId) {
+        try {
+            return $this->collection->findOne(['_id' => new ObjectId($postId), 'theme.id' => new ObjectId($themeId)]);
+        } catch (Exception $e) {
+            throw new Exception("Erro ao obter post pelo id do tema ".$themeId."", 500);
+        }
+    }
+    function getPostsByThemeId($themeId) {
+        try {
+            $posts = $this->collection->find(['theme.id' => new ObjectId($themeId)]);
+            $postsByThemeId = [];
+
+            foreach ($posts as $data) {
+                $postsByThemeId[] = $data;
+            }
+
+            return $postsByThemeId;
+        } catch (Exception $e) {
+            throw new Exception("Erro ao obter todos os posts pelo id do tema ".$themeId."", 500);
+        }
     }
 }

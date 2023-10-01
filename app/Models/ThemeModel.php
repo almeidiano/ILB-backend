@@ -6,6 +6,8 @@ use App\Libraries\DatabaseConnector;
 use Exception;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Collection;
+
+
 class ThemeModel
 {
     private Collection $collection;
@@ -30,12 +32,40 @@ class ThemeModel
         }
     }
 
+    function getAllPendingUsersFromThemes() {
+        try {
+            $data = [];
+            $cursor = $this->collection->find();
+
+            foreach ($cursor as $document) {
+                if($document['isPublic'] === false) {
+                    $data[] = $document;
+                }
+            }
+
+            return $data;
+        } catch (Exception $ex) {
+            throw new Exception("Erro ao obter todos os temas", 500);
+        }
+    }
+
+    function getTheme($id) {
+        try {
+            return $this->collection->findOne(['_id' => new ObjectId($id)]);
+        } catch (Exception $e) {
+            throw new Exception("Não foi possível obter o tema com id: ".$id."", 500);
+        }
+    }
+
     function createTheme($json) {
         if($json) {
             try {
                 $this->collection->insertOne([
                     'name' => $json['name'],
-                    'private' => $json['private']
+                    'allowedUsers' => [],
+                    'pendindUsers' => [],
+                    'isPublic' => $json['isPublic'],
+                    'posts' => []
                 ]);
 
                 return 'Tema adicionado';
@@ -47,12 +77,34 @@ class ThemeModel
         }
     }
 
+    function enterTheme($themeId, $userId) {
+        try {
+            $usermodel = new UserModel();
+            $userFound = $usermodel->getUserById($userId); 
+
+            $this->collection->updateOne(
+                ['_id' => new ObjectId($themeId)],
+                ['$set' => ['pendingUsers' => [
+                    [
+                        'id' => $userFound['_id'],
+                        'email' => $userFound['email'],
+                        'name' => $userFound['name']
+                    ]
+                ]]]
+            );
+
+            return 'Invite solicitado!';
+        } catch (Exception $e) {
+            throw new Exception("Ocorreu um erro ao enviar solicitação ao tema. Erro técnico: " . $e->getMessage(), 500);
+        }
+    }
+
     function updateTheme($json, $themeID) {
         if($json) {
             try {
                 $this->collection->updateOne(
                     ['_id' => new ObjectId($themeID)],
-                ['$set' => ['name' => $json['name'], 'private' => $json['private']]]
+                ['$set' => ['name' => $json['name'], 'isPublic' => $json['isPublic']]]
                 );
 
                 return 'Tema atualizado';
