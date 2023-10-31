@@ -28,7 +28,7 @@ class ThemeModel
 
             return $data;
         } catch (Exception $ex) {
-            throw new Exception("Erro ao obter todos os temas", 500);
+            throw new Exception("Erro ao obter todos os temas. Erro técnico: ".$ex->getMessage(), 500);
         }
     }
 
@@ -46,6 +46,16 @@ class ThemeModel
             return $data;
         } catch (Exception $ex) {
             throw new Exception("Erro ao obter todos os temas", 500);
+        }
+    }
+
+    function checkIfUserBelongsToPrivateTheme($themeId, $userId) {
+        $themeFound = $this->getTheme($themeId);
+
+        forEach($themeFound->allowedUsers as $allowedUser) {
+            if($allowedUser === $userId) {
+                return true;
+            }else return false;
         }
     }
 

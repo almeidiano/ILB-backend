@@ -160,7 +160,7 @@ class PostModel
                 $userFound = $this->usersCollection->findOne(['_id' => new ObjectId($json['author_id'])]);
                 $themeFound = $this->themesCollection->findOne(['_id' => new ObjectId($json['theme_id'])]);
 
-                $this->collection->insertOne([
+                $insertOneResult = $this->collection->insertOne([
                     'createdAt' => $now,
                     'title' => $title,
                     'content' => $content,
@@ -183,7 +183,9 @@ class PostModel
                     'image' => $imagePath
                 ]);
 
-                return 'Post adicionado com sucesso';
+                // Retrieve the inserted document by its _id
+                $insertedDocument = $this->getPost($insertOneResult->getInsertedId());
+                return $insertedDocument;
             } catch (Exception $e) {
                 return "Ocorreu um erro ao adicionar post. Erro técnico: ".$e->getMessage();
             }

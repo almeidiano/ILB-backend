@@ -3,7 +3,6 @@
 #-------------------------
 
 public/
-uploads/
 
 #-------------------------
 # Operating Specific Junk Files
@@ -90,7 +89,7 @@ phpunit
 #-------------------------
 # Composer
 #-------------------------
-vendor/
+#vendor/
 
 #-------------------------
 # IDE / Development Files

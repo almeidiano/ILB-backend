@@ -28,7 +28,7 @@ class PostController extends BaseController
 
                 if (! $image->hasMoved()) {
                     $imageName = $image->getRandomName();
-                    $imagePath = base_url().'uploads/images/'.$imageName;
+                    $imagePath = 'https://ilovebrides.almeidiano.dev/uploads/images/'.$imageName;
                     
                     try {
                         //Image manipulation
@@ -54,6 +54,8 @@ class PostController extends BaseController
                     $postmodel = new PostModel();
                     return $this->response->setJSON($postmodel->createPost($json, $imagePath));
                 }
+
+                exit($image);
 
             }
         }

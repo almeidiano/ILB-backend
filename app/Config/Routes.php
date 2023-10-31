@@ -92,6 +92,7 @@ $routes->group('community', function($routes) {
     $routes->get('themes/(:segment)', 'ThemeController::getTheme/$1');
     $routes->get('themes', 'ThemeController::getAllThemes');
     // Método POST
+    $routes->post('themes/check/(:segment)', 'ThemeController::checkIfUserBelongsToPrivateTheme/$1');
     $routes->post('themes', 'ThemeController::createTheme');
     $routes->post('themes/(:segment)/enter', 'ThemeController::enterTheme/$1');
     // Método PUT

@@ -51,6 +51,13 @@ class ThemeController extends BaseController
         $themeModel = new ThemeModel();
         return $this->response->setJSON($themeModel->getAllPendingUsersFromThemes());
     }
+    public function checkIfUserBelongsToPrivateTheme($themeId) {    
+        if($this->request->is('post')) {
+            $userId = $this->request->getVar("userId");
+            $themeModel = new ThemeModel();
+            return $this->response->setJSON($themeModel->checkIfUserBelongsToPrivateTheme($themeId, $userId));
+        }
+    }
     // Update
     public function updateTheme($themeID)
     {
