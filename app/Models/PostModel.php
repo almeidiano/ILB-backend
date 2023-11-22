@@ -185,6 +185,13 @@ class PostModel
 
                 // Retrieve the inserted document by its _id
                 $insertedDocument = $this->getPost($insertOneResult->getInsertedId());
+
+                // Add the last inserted post id to the themes
+                $this->themesCollection->updateOne(
+                    ['_id' => new ObjectId($themeFound['_id'])],
+                    ['$addToSet' => ['posts' => $insertOneResult->getInsertedId()]]
+                );
+
                 return $insertedDocument;
             } catch (Exception $e) {
                 return "Ocorreu um erro ao adicionar post. Erro técnico: ".$e->getMessage();

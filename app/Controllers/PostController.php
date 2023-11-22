@@ -48,7 +48,7 @@ class PostController extends BaseController
                         exit('Ocorreu um erro ao manipular a imagem: '.$th->getMessage());
                     }
 
-                    $image->move(ROOTPATH.'uploads/images', $imageName);
+                    // $image->move(ROOTPATH.'uploads/images', $imageName);
 
                     $json = $this->request->getVar(["title", "content", "public", "theme_id", "author_id"]);
                     $postmodel = new PostModel();
