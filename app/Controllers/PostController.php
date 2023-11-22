@@ -48,25 +48,15 @@ class PostController extends BaseController
                         exit('Ocorreu um erro ao manipular a imagem: '.$th->getMessage());
                     }
 
-                    // $image->move(ROOTPATH.'uploads/images', $imageName);
+                    $image->move(ROOTPATH.'uploads/images', $imageName);
 
                     $json = $this->request->getVar(["title", "content", "public", "theme_id", "author_id"]);
                     $postmodel = new PostModel();
                     return $this->response->setJSON($postmodel->createPost($json, $imagePath));
                 }
-<<<<<<< HEAD
-=======
-
-                exit($image);
-
-<<<<<<< HEAD
->>>>>>> parent of 783078d (Test to deploy)
-=======
->>>>>>> parent of 783078d (Test to deploy)
             }
         }
     }
-
     // Read
     public function getAllPosts() {
         $postmodel = new PostModel();
