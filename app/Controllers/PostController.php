@@ -59,6 +59,9 @@ class PostController extends BaseController
 
                 exit($image);
 
+<<<<<<< HEAD
+>>>>>>> parent of 783078d (Test to deploy)
+=======
 >>>>>>> parent of 783078d (Test to deploy)
             }
         }
