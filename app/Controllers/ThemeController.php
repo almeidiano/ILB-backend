@@ -67,22 +67,6 @@ class ThemeController extends BaseController
             return $this->response->setJSON($themeModel->updateTheme($json, $themeID));
         }
     }
-    public function acceptUserToTheme($themeID)
-    {
-        if($this->request->is('put')) {
-            $userId = $this->request->getVar("userId");
-            $themeModel = new ThemeModel();
-            return $this->response->setJSON($themeModel->acceptUserToTheme($userId, $themeID));
-        }
-    }
-    public function refuseUserFromTheme($themeID)
-    {
-        if($this->request->is('put')) {
-            $userId = $this->request->getVar("userId");
-            $themeModel = new ThemeModel();
-            return $this->response->setJSON($themeModel->refuseUserFromTheme($userId, $themeID));
-        }
-    }
     // Delete
     public function deleteTheme($themeID)
     {
