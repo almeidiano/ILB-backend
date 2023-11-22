@@ -54,8 +54,6 @@ class PostController extends BaseController
                     $postmodel = new PostModel();
                     return $this->response->setJSON($postmodel->createPost($json, $imagePath));
                 }
-
-                exit($image);
             }
         }
     }
