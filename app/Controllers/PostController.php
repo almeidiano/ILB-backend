@@ -56,7 +56,6 @@ class PostController extends BaseController
                 }
 
                 exit($image);
-
             }
         }
     }
