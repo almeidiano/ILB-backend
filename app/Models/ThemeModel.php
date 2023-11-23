@@ -94,12 +94,11 @@ class ThemeModel
 
             $this->collection->updateOne(
                 ['_id' => new ObjectId($themeId)],
-                ['$set' => ['pendingUsers' => [
-                    [
-                        'id' => $userFound['_id'],
-                        'email' => $userFound['email'],
-                        'name' => $userFound['name']
-                    ]
+                ['$addToSet' => ['pendingUsers' => [
+                    'id' => new ObjectId(),
+                    'userId' => $userFound['_id'],
+                    'email' => $userFound['email'],
+                    'name' => $userFound['name']
                 ]]]
             );
 
@@ -125,7 +124,69 @@ class ThemeModel
             throw new Exception("Corpo do tema não especificado", 401);
         }
     }
+    function acceptUserToTheme($userId, $themeId) {
+        try {
+            $usermodel = new UserModel();
+            $userFound = $usermodel->getUserById($userId); 
 
+            $this->collection->updateOne(
+                ['_id' => new ObjectId($themeId)],
+                ['$pull' => ['pendingUsers' => 
+                    [
+                        'email' => $userFound['email'],
+                        'name' => $userFound['name']
+                    ]
+                ]]
+            );
+
+            $this->moveUserToAllowedList($themeId, $userFound);
+
+            return 'Usuário aceito!';
+        } catch (Exception $e) {
+            throw new Exception("Ocorreu um erro ao enviar solicitação ao tema. Erro técnico: " . $e->getMessage(), 500);
+        }
+    }
+
+    function refuseUserFromTheme($userId, $themeId) {
+        try {
+            $usermodel = new UserModel();
+            $userFound = $usermodel->getUserById($userId); 
+
+            $this->collection->updateOne(
+                ['_id' => new ObjectId($themeId)],
+                ['$pull' => ['pendingUsers' => 
+                    [
+                        'email' => $userFound['email'],
+                        'name' => $userFound['name']
+                    ]
+                ]]
+            );
+
+            $this->removeUserFromPendingList($themeId, $userFound);
+
+            return 'Usuário recusado!';
+        } catch (Exception $e) {
+            throw new Exception("Ocorreu um erro ao enviar solicitação ao tema. Erro técnico: " . $e->getMessage(), 500);
+        }
+    }
+
+    private function moveUserToAllowedList($themeId, $userFound) {
+        return $this->collection->updateOne(
+            ['_id' => new ObjectId($themeId)],
+            ['$addToSet' => ['allowedUsers' => 
+                $userFound['_id']
+            ]]
+        );
+    }
+
+    private function removeUserFromPendingList($themeId, $userFound) {
+        return $this->collection->updateOne(
+            ['_id' => new ObjectId($themeId)],
+            ['$pull' => ['pendingUsers' => 
+                $userFound['_id']
+            ]]
+        );
+    }
     function deleteTheme($themeID) {
         try {
             $this->collection->deleteOne(['_id' => new ObjectId($themeID)]);

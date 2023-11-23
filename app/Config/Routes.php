@@ -96,6 +96,8 @@ $routes->group('community', function($routes) {
     $routes->post('themes', 'ThemeController::createTheme');
     $routes->post('themes/(:segment)/enter', 'ThemeController::enterTheme/$1');
     // Método PUT
+    $routes->put('themes/(:segment)/refuse', 'ThemeController::refuseUserFromTheme/$1');
+    $routes->put('themes/(:segment)/accept', 'ThemeController::acceptUserToTheme/$1');
     $routes->put('themes/(:any)', 'ThemeController::updateTheme/$1');
     // Método DELETE
     $routes->delete('themes/(:any)', 'ThemeController::deleteTheme/$1');
