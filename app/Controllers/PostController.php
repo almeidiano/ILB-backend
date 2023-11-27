@@ -25,7 +25,6 @@ class PostController extends BaseController
             // Imagens
             if($validateImages) {
                 $image = $this->request->getFile('image');
-
                 if (! $image->hasMoved()) {
                     $imageName = $image->getRandomName();
                     $imagePath = 'https://ilovebrides.almeidiano.dev/uploads/images/'.$imageName;
@@ -95,19 +94,21 @@ class PostController extends BaseController
                 'image' => 'uploaded[image]|max_size[image,5000]|is_image[image]'
             ]);
 
-            global $imagePath;
-
             if($validateImages) {
                 $image = $this->request->getFile('image');
+
                 if (! $image->hasMoved()) {
-                    $imageName = $image->getRandomName();
-                    $imagePath = ROOTPATH.'uploads/images/'.$imageName;
+                    $getRandomString = $image->getRandomName();
+                    $imageName = str_replace(".jpg", "", $getRandomString);
+                    $imagePath = ROOTPATH.'uploads/images/'.$imageName.'.webp';
     
                     try {
                         //Image manipulation
-                        $imageManager = \Config\Services::image()
+                        $imageManager = \Config\Services::image('gd')
                         ->withFile($image)
                         ->resize(550, 550, true, 'height')
+                        ->convert(IMAGETYPE_WEBP)
+
                         // ->text('Copyright 2017 My Photo Co', [
                         //     'color'      => '#fff',
                         //     'opacity'    => 0.5,
@@ -116,28 +117,28 @@ class PostController extends BaseController
                         //     'vAlign'     => 'bottom',
                         //     'fontSize'   => 20,
                         // ])
-                        ->save(ROOTPATH.'uploads/images/'.$imageName);
+                        ->save(ROOTPATH.'uploads/images/'.$imageName.'.webp');
 
                         try {
                             $json = $this->request->getVar(["title", "content", "public"]);
                             $postmodel = new PostModel();
                             return $this->response->setJSON($postmodel->updatePost($postId, $json, $imagePath));  
                         } catch (\Throwable $th) {
-                            exit('erro: '.$th->getMessage());
+                            exit('Erro: '.$th->getMessage());
                         } 
                     } catch (\Throwable $th) {
                         exit('Ocorreu um erro ao manipular a imagem: '.$th->getMessage());
                     }             
                 }
+            }else {
+                try {
+                    $postmodel = new PostModel();
+                    $json = $this->request->getVar(["title", "content", "public"]);
+                    return $this->response->setJSON($postmodel->updatePost($postId, $json, null));  
+                } catch (\Throwable $th) {
+                    exit('Erro: '.$th->getMessage());
+                } 
             }
-            
-            try {
-                $json = $this->request->getVar(["title", "content", "public"]);
-                $postmodel = new PostModel();
-                return $this->response->setJSON($postmodel->updatePost($postId, $json, $imagePath));  
-            } catch (\Throwable $th) {
-                exit('erro: '.$th->getMessage());
-            } 
         }
     }
 

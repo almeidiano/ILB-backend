@@ -238,7 +238,7 @@ class PostModel
         if ($postFound) {
             // Obrigatório
             $title = $json['title'];
-            $content = $json['content'];
+            $content = $json['content']; 
 
             if ($title && $content) {
                 try {
@@ -248,7 +248,7 @@ class PostModel
                             'title' => $title,
                             'content' => $content,
                             'isPublic' => $json['public'],
-                            'image' => $imagePath
+                            $imagePath !== null ?? 'image' => $imagePath
                         ]]
                     );
 
