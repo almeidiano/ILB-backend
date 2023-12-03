@@ -234,7 +234,7 @@ class PostModel
         } catch (Exception $e) {
             exit("Não foi possível obter post para atualização com o id ' .$postId. ' Erro técnico: " . $e->getMessage());
         }
-
+        
         if ($postFound) {
             // Obrigatório
             $title = $json['title'];
@@ -248,11 +248,11 @@ class PostModel
                             'title' => $title,
                             'content' => $content,
                             'isPublic' => $json['public'],
-                            $imagePath !== null ?? 'image' => $imagePath
+                            'image' => $imagePath ? $imagePath : $postFound['image']
                         ]]
                     );
 
-                    return 'Post atualizado com sucesso';
+                    exit('Post atualizado com sucesso');
                 } catch (Exception $e) {
                     exit("Não foi possível atualizar post com o id '.$postId.' Erro técnico: " . $e->getMessage());
                 }

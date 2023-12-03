@@ -39,8 +39,8 @@ $routes->group('community', function($routes) {
     $routes->get('posts', 'PostController::getAllPosts');
     // Método POST
     $routes->post('posts', 'PostController::createPost');
-    // Método PUT
-    $routes->put('posts/(:segment)', 'PostController::updatePost/$1');
+    // Método PUT (QUE ERA PRA SER)
+    $routes->post('posts/(:segment)/edit', 'PostController::updatePost/$1');
     // Método DELETE
     $routes->delete('posts/(:segment)', 'PostController::deletePost/$1');
 

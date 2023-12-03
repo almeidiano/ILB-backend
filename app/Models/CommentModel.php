@@ -74,14 +74,21 @@ class CommentModel
         }
     }
 
-    public function updateComment($commentId, $json) {
-        $commentFound = $this->collection->findOne(['comments._id' => new ObjectId($commentId)], ['comments.$' => 1]);
-        $commentFound = $commentFound->comments[0];
+    public function updateComment($commentId, $content) {
+        $entirePost = $this->collection->findOne(['comments._id' => new ObjectId($commentId)], ['comments.$' => 1]);
+
+        $commentFound = null;
+
+        // achar o comentário
+        foreach ($entirePost['comments'] as $comment) {
+            // Comparar o ID do comentário
+            if ($comment['_id'] == $commentId) {
+                $commentFound = $comment;
+                break;
+            }
+        }
 
         if($commentFound) try{
-            // Conteúdo Obrigatório
-            $content = $json['content'];
-
             $this->collection->updateOne(
                 ['comments._id' => $commentFound['_id']],
                 ['$set' => ['comments.$.text' => $content]]

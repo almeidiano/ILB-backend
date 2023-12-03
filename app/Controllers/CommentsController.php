@@ -33,9 +33,9 @@ class CommentsController extends BaseController
     // Update
     public function updateComment($commentId) {
         if($this->request->is('put')) {
-            $json = $this->request->getVar(["content", "images", "videos"]);
+            $json = $this->request->getVar('content');
             $commentmodel = new CommentModel();
-            return $this->response->setJSON($commentmodel->updateComment($commentId, $json));
+            return $this->response->setJSON($commentmodel->updateComment($commentId, $content));
         }
     }
 

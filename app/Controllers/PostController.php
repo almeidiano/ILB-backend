@@ -88,26 +88,26 @@ class PostController extends BaseController
 
     //Update
     public function updatePost($postId) {
-        if($this->request->is('put')) {
+        if($this->request->is('post')) {
             // Validação
             $validateImages = $this->validate([
                 'image' => 'uploaded[image]|max_size[image,5000]|is_image[image]'
             ]);
+            
 
             if($validateImages) {
                 $image = $this->request->getFile('image');
 
                 if (! $image->hasMoved()) {
-                    $getRandomString = $image->getRandomName();
-                    $imageName = str_replace(".jpg", "", $getRandomString);
-                    $imagePath = ROOTPATH.'uploads/images/'.$imageName.'.webp';
+                    $imageName = $image->getRandomName();
+                    // $imagePath = ROOTPATH.'uploads/images/'.$imageName;
+                    $imagePath = 'https://ilovebrides.almeidiano.dev/uploads/images/'.$imageName;
     
                     try {
                         //Image manipulation
-                        $imageManager = \Config\Services::image('gd')
+                        $imageManager = \Config\Services::image()
                         ->withFile($image)
                         ->resize(550, 550, true, 'height')
-                        ->convert(IMAGETYPE_WEBP)
 
                         // ->text('Copyright 2017 My Photo Co', [
                         //     'color'      => '#fff',
@@ -117,7 +117,7 @@ class PostController extends BaseController
                         //     'vAlign'     => 'bottom',
                         //     'fontSize'   => 20,
                         // ])
-                        ->save(ROOTPATH.'uploads/images/'.$imageName.'.webp');
+                        ->save(ROOTPATH.'uploads/images/'.$imageName);
 
                         try {
                             $json = $this->request->getVar(["title", "content", "public"]);
