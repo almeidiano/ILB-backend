@@ -19,6 +19,12 @@ class CommentsController extends BaseController
         return $this->response->setJSON($commentmodel->getComment($commentId, $postId, $userId));
     }
 
+    // Read 
+    public function getAllCommentsFromPost($postId) {
+        $commentmodel = new CommentModel();
+        return $this->response->setJSON($commentmodel->getAllCommentsFromPost($postId));
+    }
+
     // Create
     public function createComment($postId) {
         if($this->request->is('post')) {

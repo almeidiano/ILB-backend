@@ -19,6 +19,21 @@ class CommentModel
         $this->userCollection = $database->getCollection("Users");
     }
 
+    private function getPost($id)
+    {
+        try {
+            return $this->collection->findOne(['_id' => new ObjectId($id)]);
+        } catch (Exception $e) {
+            throw new Exception("O post especificado com id: ".$id." não existe", 500);
+        }
+    }
+
+    public function getAllCommentsFromPost($postId) {
+        //getPost 
+        $post = $this->getPost($postId);
+        return $post['comments'];
+    }
+
     public function createComment($postId, $json) {
         if($postId) {
             if($json) {
@@ -93,8 +108,6 @@ class CommentModel
                 ['comments._id' => $commentFound['_id']],
                 ['$set' => ['comments.$.text' => $content]]
             );
-
-            return 'Comentário editado com sucesso';
         }Catch(Exception $e) {
             throw new Exception("Ocorreu um erro ao editar comentário. Erro técnico: ".$e->getMessage(), 500);
         }

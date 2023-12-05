@@ -46,6 +46,8 @@ $routes->group('community', function($routes) {
 
     // COMENTÁRIOS
 
+    // Método GET
+    $routes->get('comments/(:any)', 'CommentsController::getAllCommentsFromPost/$1');
     // Método POST
     $routes->post('posts/(:segment)/comments', 'CommentsController::createComment/$1');
     // Método PUT
