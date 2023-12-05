@@ -63,6 +63,7 @@ class CommentModel
                                     'photo' => 'fotodousuario.png'
                                 ],
                                 'userLiked' => false,
+                                'wasEdited' => false,
                                 'likesCount' => 0
                             ];
 
@@ -106,7 +107,10 @@ class CommentModel
         if($commentFound) try{
             $this->collection->updateOne(
                 ['comments._id' => $commentFound['_id']],
-                ['$set' => ['comments.$.text' => $content]]
+                ['$set' => [
+                    'comments.$.text' => $content,
+                    'comments.$.wasEdited' => true,
+                ]]
             );
         }Catch(Exception $e) {
             throw new Exception("Ocorreu um erro ao editar comentário. Erro técnico: ".$e->getMessage(), 500);
