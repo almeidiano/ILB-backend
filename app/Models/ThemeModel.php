@@ -151,6 +151,7 @@ class ThemeModel
         try {
             $usermodel = new UserModel();
             $userFound = $usermodel->getUserById($userId); 
+            
 
             $this->collection->updateOne(
                 ['_id' => new ObjectId($themeId)],
