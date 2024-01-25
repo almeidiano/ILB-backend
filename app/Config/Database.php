@@ -25,9 +25,9 @@ class Database extends Config
      * The default database connection.
      */
     public array $default = [
-        'DSN'      => 'mongodb+srv://almeidiano:BTYCyUpOEwRtOb30@cluster0.iwnx7xq.mongodb.net/?retryWrites=true&w=majority',
+        'DSN'      => '',
         'hostname' => 'localhost',
-        'username' => '',
+        'username' => 'root',
         'password' => '',
         'database' => '',
         'DBDriver' => 'MySQLi',
@@ -43,6 +43,56 @@ class Database extends Config
         'failover' => [],
         'port'     => 3306,
     ];
+
+    // public string $CMSDatabase = 'cms';
+
+    // /**
+    //  * ILB CMS connection.
+    //  */
+    // public array $cms = [
+    //     'DSN'      => '',
+    //     'hostname' => 'localhost',
+    //     'username' => 'root',
+    //     'password' => '',
+    //     'database' => 'ilb-cms',
+    //     'DBDriver' => 'MySQLi',
+    //     'DBPrefix' => '',
+    //     'pConnect' => false,
+    //     'DBDebug'  => true,
+    //     'charset'  => 'utf8',
+    //     'DBCollat' => 'utf8_general_ci',
+    //     'swapPre'  => '',
+    //     'encrypt'  => false,
+    //     'compress' => false,
+    //     'strictOn' => false,
+    //     'failover' => [],
+    //     'port'     => 3306,
+    // ];
+
+    // public string $ComunidadeDatabase = 'comunidade';
+
+    // /**
+    //  * ILB Comunidade connection.
+    //  */
+    // public array $comunidade = [
+    //     'DSN'      => '',
+    //     'hostname' => 'localhost',
+    //     'username' => 'root',
+    //     'password' => '',
+    //     'database' => 'ilb-comunidade',
+    //     'DBDriver' => 'MySQLi',
+    //     'DBPrefix' => '',
+    //     'pConnect' => false,
+    //     'DBDebug'  => true,
+    //     'charset'  => 'utf8',
+    //     'DBCollat' => 'utf8_general_ci',
+    //     'swapPre'  => '',
+    //     'encrypt'  => false,
+    //     'compress' => false,
+    //     'strictOn' => false,
+    //     'failover' => [],
+    //     'port'     => 3306,
+    // ];
 
     /**
      * This database connection is used when

@@ -17,12 +17,12 @@ class DatabaseConnector {
     /**
      * @throws Exception
      */
-    function __construct() {
+    function __construct($database) {
         $uri = getenv('URL_ATLAS');
-        $database = getenv('BANCO_DE_DADOS');
+        // $database = getenv('BANCO_DE_DADOS');
 
 
-        if (empty($uri) || empty($database)) {
+        if (empty($uri)) {
             throw new Exception('Você precisa declarar a URL_ATLAS e o BANCO_DE_DADOS no arquivo .env!', 500);
         }
 
@@ -38,6 +38,15 @@ class DatabaseConnector {
             throw new Exception("Não foi possível conectar-se ao banco de dados intitulado ".$database.". Erro técnico: " . $ex->getMessage(), 500);
         }
     }
+
+    // public function selectCurrentDatabase($database) {
+    //     try {
+    //         $this->database = $this->client->selectDatabase($database);
+    //     } catch(RuntimeException $ex) {
+    //         throw new Exception("Não foi possível conectar-se ao banco de dados intitulado ".$database.". Erro técnico: " . $ex->getMessage(), 500);
+    //     }
+    //     // exit($database);
+    // }
 
     function getCollection($collection): \MongoDB\Collection
     {

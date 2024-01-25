@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Community;
 
 use App\Controllers\BaseController;
 use App\Models\LikeModel;

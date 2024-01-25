@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Community;
 
 use App\Controllers\BaseController;
 use App\Models\ThemeModel;
@@ -83,6 +83,7 @@ class ThemeController extends BaseController
             return $this->response->setJSON($themeModel->refuseUserFromTheme($userId, $themeID));
         }
     }
+     
     // Delete
     public function deleteTheme($themeID)
     {

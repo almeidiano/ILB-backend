@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Community;
 
-use App\Models\LikeModel;
-use App\Models\PostModel;   
+// use App\Models\LikeModel;
+use App\Models\Community\PostModel;
+use App\Controllers\BaseController;   
 
 class PostController extends BaseController
 {

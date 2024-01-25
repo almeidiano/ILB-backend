@@ -1,5 +1,5 @@
 <?php
-namespace App\Models;
+namespace App\Models\Community;
 
 use App\Controllers\ResponseController;
 use App\Libraries\DatabaseConnector;
@@ -22,8 +22,9 @@ class PostModel
     function __construct()
     {
         $database = new DatabaseConnector();
+        $database->selectCurrentDatabase('ILB_comunidade');
         $this->collection = $database->getCollection("posts");
-        $this->usersCollection = $database->getCollection("Users");
+        $this->usersCollection = $database->getCollection("users");
         $this->themesCollection = $database->getCollection("themes");
     }
 
@@ -104,7 +105,7 @@ class PostModel
 
             return $data;
         } catch (Exception $ex) {
-            throw new Exception("Erro ao obter todos os posts", 500);
+            throw new Exception("Erro ao obter todos os posts. Erro técnico: ".$ex->getMessage(), 500);
         }
     }
 
