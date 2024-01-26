@@ -4,6 +4,7 @@
 
 public/
 app/Libraries/
+app/Libraries/DatabaseConnector.php
 
 #-------------------------
 # Operating Specific Junk Files
