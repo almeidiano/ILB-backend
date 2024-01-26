@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Community;
 
 use App\Libraries\DatabaseConnector;
-use App\Models\PostModel;
+use App\Models\Community\PostModel;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Collection;
 use Exception;

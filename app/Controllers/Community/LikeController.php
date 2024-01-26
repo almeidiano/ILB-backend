@@ -3,7 +3,7 @@
 namespace App\Controllers\Community;
 
 use App\Controllers\BaseController;
-use App\Models\LikeModel;
+use App\Models\Community\LikeModel;
 
 class LikeController extends BaseController
 {

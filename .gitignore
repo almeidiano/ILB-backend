@@ -3,7 +3,7 @@
 #-------------------------
 
 public/
-app/Libraries/*
+app/Libraries/
 
 #-------------------------
 # Operating Specific Junk Files

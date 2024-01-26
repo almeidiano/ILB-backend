@@ -3,8 +3,8 @@
 namespace App\Controllers\Community;
 
 use App\Controllers\BaseController;
-use App\Models\ThemeModel;
-use App\Models\PostModel;
+use App\Models\Community\ThemeModel;
+use App\Models\Community\PostModel;
 
 class ThemeController extends BaseController
 {

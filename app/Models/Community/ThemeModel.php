@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Community;
 
 use App\Libraries\DatabaseConnector;
 use Exception;

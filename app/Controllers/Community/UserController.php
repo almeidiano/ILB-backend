@@ -3,8 +3,8 @@
 namespace App\Controllers\Community;
 
 use App\Controllers\BaseController;
-use App\Models\PostModel;
-use App\Models\UserModel;
+use App\Models\Community\PostModel;
+use App\Models\Community\UserModel;
 use MongoDB\BSON\ObjectId;
 
 class UserController extends BaseController
@@ -37,7 +37,6 @@ class UserController extends BaseController
             $password = $this->request->getVar("password");
             $user = $usermodel->login($email, $password);
 
-            // return view('welcome_message');
             return $this->response->setJSON($user);
         }
     }

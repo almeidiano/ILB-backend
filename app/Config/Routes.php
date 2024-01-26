@@ -87,14 +87,14 @@ $routes->group('community', function($routes) {
 
     // LIKE
     // Método GET
-    $routes->get('comments/liked/(:segment)', 'Community\LikeController::getCommentsLikedFromUser/$1');
-    $routes->get('posts/liked/(:segment)', 'Community\LikeController::getPostsLikedFromUser/$1');
+    $routes->get('liked/comments/(:segment)', 'Community\LikeController::getCommentsLikedFromUser/$1');
+    $routes->get('liked/posts/(:segment)', 'Community\LikeController::getPostsLikedFromUser/$1');
     // Método POST
-    $routes->post('posts/liked/(:segment)', 'Community\LikeController::likePost/$1');
-    $routes->post('comments/liked/(:segment)', 'Community\LikeController::likeComment/$1');
+    $routes->post('liked/posts/(:segment)', 'Community\LikeController::likePost/$1');
+    $routes->post('liked/comments/(:segment)', 'Community\LikeController::likeComment/$1');
     // Método DELETE
-    $routes->delete('posts/liked/(:segment)', 'Community\LikeController::deleteLikedPost/$1');
-    $routes->delete('comments/liked/(:segment)', 'Community\LikeController::deleteLikedComment/$1');
+    $routes->delete('liked/posts/(:segment)', 'Community\LikeController::deleteLikedPost/$1');
+    $routes->delete('liked/comments/(:segment)', 'Community\LikeController::deleteLikedComment/$1');
 
     // API ADMIN (Similar ao usuário, mas dividido especialmente para os admins
     // As operações de posts são similares ao do usuário normal (rota, parametros e payload).

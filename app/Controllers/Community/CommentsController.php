@@ -3,7 +3,7 @@
 namespace App\Controllers\Community;
 
 use App\Controllers\BaseController;
-use App\Models\CommentModel;
+use App\Models\Community\CommentModel;
 use Exception;
 
 class CommentsController extends BaseController
