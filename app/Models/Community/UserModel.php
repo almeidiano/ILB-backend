@@ -17,10 +17,8 @@ class UserModel
     private Collection $postCollection;
 
     function __construct() {
-        // $connection = new DatabaseConnector();
-        // $connection->selectCurrentDatabase('ILB_comunidade');
-        // // $this->collection = $connection->getCollection("Users");
-        // return $connection;
+        $connection = new DatabaseConnector('ILB_comunidade');
+        $this->collection = $connection->getCollection("Users");
     }
 
     /**

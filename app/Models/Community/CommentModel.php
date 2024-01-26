@@ -14,8 +14,8 @@ class CommentModel
     private Collection $userCollection;
 
     function __construct() {
-        $database = new DatabaseConnector();
-        $this->collection = $database->getCollection("posts");
+        $database = new DatabaseConnector('ILB_comunidade');
+        $this->collection = $database->getCollection("Posts");
         $this->userCollection = $database->getCollection("Users");
     }
 

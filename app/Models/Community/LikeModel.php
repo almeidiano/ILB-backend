@@ -16,10 +16,10 @@ class LikeModel
 
     function __construct()
     {
-        $database = new DatabaseConnector();
-        $this->collection = $database->getCollection("likes");
+        $database = new DatabaseConnector('ILB_comunidade');
+        $this->collection = $database->getCollection("Likes");
         $this->usersCollection = $database->getCollection("Users");
-        $this->postsCollection = $database->getCollection("posts");
+        $this->postsCollection = $database->getCollection("Posts");
     }
 
     function getLikedComments($postId, $userId) {

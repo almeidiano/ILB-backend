@@ -13,8 +13,8 @@ class ThemeModel
     private Collection $collection;
 
     function __construct() {
-        $database = new DatabaseConnector();
-        $this->collection = $database->getCollection('themes');
+        $database = new DatabaseConnector('ILB_comunidade');
+        $this->collection = $database->getCollection('Themes');
     }
 
     function getAllThemes() {

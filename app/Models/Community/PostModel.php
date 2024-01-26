@@ -21,11 +21,10 @@ class PostModel
      */
     function __construct()
     {
-        $database = new DatabaseConnector();
-        $database->selectCurrentDatabase('ILB_comunidade');
-        $this->collection = $database->getCollection("posts");
-        $this->usersCollection = $database->getCollection("users");
-        $this->themesCollection = $database->getCollection("themes");
+        $database = new DatabaseConnector('ILB_comunidade');
+        $this->collection = $database->getCollection("Posts");
+        $this->usersCollection = $database->getCollection("Users");
+        $this->themesCollection = $database->getCollection("Themes");
     }
 
     private function getPostIdAsString($postId) {
