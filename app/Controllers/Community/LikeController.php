@@ -33,7 +33,7 @@ class LikeController extends BaseController
     public function getCommentsLikedFromUser($userId): \CodeIgniter\HTTP\ResponseInterface
     {
         $likeModel = new LikeModel();
-        return $this->response->setJSON($likeModel->getLikedComments(null, $userId));
+        return $this->response->setJSON($likeModel->getLikedComments($userId));
     }
 
     // Delete

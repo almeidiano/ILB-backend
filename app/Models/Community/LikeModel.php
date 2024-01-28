@@ -22,7 +22,7 @@ class LikeModel
         $this->postsCollection = $database->getCollection("Posts");
     }
 
-    function getLikedComments($postId, $userId) {
+    function getLikedComments($userId) {
         $postmodel = new PostModel();
 
         $pipeline = [
@@ -35,39 +35,22 @@ class LikeModel
         ];
 
         $allLikedCommentsWithUserId = $this->collection->aggregate($pipeline)->toArray();
+        $allLikedCommentsFromAllPosts = [];
+        
+        forEach($allLikedCommentsWithUserId as $LC) {
+            $postWithLikedComment = $postmodel->getPost($LC['post_id']);
+            $likedCommentsFromPosts = $postWithLikedComment->comments;
 
-        if($postId) {
-            $postFound = $postmodel->getPost($postId);
-    
-            $allLikedComments = [];
-            $allLikedCommentsFromAllPosts = [];
-            $result = [];
-
-            foreach ($allLikedCommentsWithUserId as $LC) {
-                forEach($postFound->comments as $postComment) {
-                    if($postComment['_id'] == $LC['comment_id']) {
-                        $allLikedComments[] = $postComment;
-                        break;
-                    }
+            forEach($postWithLikedComment->comments as $commentsFromPosts) {
+                if($LC['action_id'] == $commentsFromPosts['_id']) {
+                    $postWithLikedComment->comments = [];
+                    $postWithLikedComment->comments = $commentsFromPosts;
+                    $allLikedCommentsFromAllPosts[] = $postWithLikedComment;
                 }
             }
-
-            return $allLikedComments;
-        }else {
-            $posts = $postmodel->getAllPosts();
-
-            forEach($posts as $post) {
-                foreach ($allLikedCommentsWithUserId as $LC) {
-                    forEach($post->comments as $commentsFromPosts) {
-                        if($LC['comment_id'] == $commentsFromPosts['_id']) {
-                            $allLikedCommentsFromAllPosts[] = $commentsFromPosts;
-                        }
-                    }
-                }
-            }
-
-            return $allLikedCommentsFromAllPosts;
         }
+
+        return $allLikedCommentsFromAllPosts;
     }
 
     function getPostsLikedFromUser($userId, $postId, $method) {
@@ -90,7 +73,7 @@ class LikeModel
 
             if($likesWithUserId) {
                 foreach ($likesWithUserId as $document) {
-                    $objectIdOfPostsIdFromLikesData[] = new ObjectId($document['post_id']);
+                    $objectIdOfPostsIdFromLikesData[] = new ObjectId($document['action_id']);
                 }
 
                 // Pega o id do post gostado para validação
@@ -139,7 +122,7 @@ class LikeModel
             [
                 '$match' => [
                     'user_id' => new ObjectId($userFound['_id']),
-                    'post_id' => $postId,
+                    'action_id' => new ObjectId($postId),
                     'action_field' => 'post'
                 ]
             ]
@@ -152,7 +135,7 @@ class LikeModel
         }else {
             $this->collection->insertOne([
                 'user_id' => $userFound['_id'],
-                'post_id' => $postIdAsString,
+                'action_id' => $postIdAsString,
                 'action_field' => 'post'
             ]);
 
@@ -182,7 +165,8 @@ class LikeModel
                 [
                     '$match' => [
                         'user_id' => new ObjectId($userFound['_id']),
-                        'comment_id' => new ObjectId($commentId),
+                        'action_id' => new ObjectId($commentId),
+                        'post_id' => new ObjectId($commentFound['post_id']),
                         'action_field' => 'comment'
                     ]
                 ]
@@ -195,8 +179,9 @@ class LikeModel
             }else {
                 try {
                     $this->collection->insertOne([
-                        'user_id' => $userFound['_id'],
-                        'comment_id' => $commentFound['_id'],
+                        'user_id' => new ObjectId($userFound['_id']),
+                        'action_id' => new ObjectId($commentId),
+                        'post_id' => new ObjectId($commentFound['post_id']),
                         'action_field' => 'comment'
                     ]);
 
