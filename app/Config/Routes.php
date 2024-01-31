@@ -40,6 +40,36 @@ $routes->group('cms', function($routes) {
 
     // Método DELETE
     $routes->delete('users/(:segment)', 'CMS\UserController::deleteUser/$1');
+
+    // NAVIGATION INFO
+    
+    // Método GET
+    $routes->get('navigation', 'CMS\NavigationController::getNavInfo');
+
+    // Método POST
+    $routes->post('navigation', 'CMS\NavigationController::addNavItem');
+
+    // Método PUT
+    $routes->put('navigation', 'CMS\NavigationController::updateNavItem');
+
+    // Método DELETE
+    $routes->delete('navigation', 'CMS\NavigationController::deleteNavItem');
+
+    // FOOTER INFO
+    
+    // Método GET
+    $routes->get('footer', 'CMS\FooterController::getFooterInfo');
+
+    // Método PUT
+    $routes->put('footer', 'CMS\FooterController::updateFooterItem');
+
+    // SYSTEM INFO
+    
+    // Método GET
+    $routes->get('system', 'CMS\SystemController::getSystemInfo');
+
+    // Método PUT
+    $routes->put('system', 'CMS\SystemController::updateSystemInfo');
 });
 
 $routes->group('community', function($routes) {
