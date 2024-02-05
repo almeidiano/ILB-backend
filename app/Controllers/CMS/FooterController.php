@@ -53,27 +53,30 @@ class FooterController extends BaseController
         return $this->response->setJSON($footerInfoModel->getFooterInfo());
     }
 
-    public function updateFooterItem(): \CodeIgniter\HTTP\ResponseInterface
+    public function updateFooterMainNavigation(): \CodeIgniter\HTTP\ResponseInterface
     {
         if($this->request->is('put')) {
-            $footerInfoModel = new FooterModel();
-            $analyze = $this->request->getVar(["type", "target"]);
+            // $footerInfoModel = new FooterModel();
+            // $analyze = $this->request->getVar(["type", "target"]);
 
-            // se o tipo da análise da variável for híbrido, é necessário existir 
-            // o parametro content no input com os dados corretos
-            if($analyze['type'] === 'hybrid') {
-              $content = $this->request->getVar("content");
+            // // se o tipo da análise da variável for híbrido, é necessário existir 
+            // // o parametro content no input com os dados corretos
+            // if($analyze['type'] === 'hybrid') {
+            //   $content = $this->request->getVar("content");
 
-              if($this->validateValuesFromHybridType($analyze['target'], $content) === true) {
-                return $this->response->setJSON($footerInfoModel->updateFooterAnchor($content, $analyze['target']));
-              }
-            }
+            //   if($this->validateValuesFromHybridType($analyze['target'], $content) === true) {
+            //     return $this->response->setJSON($footerInfoModel->updateFooterAnchor($content, $analyze['target']));
+            //   }
+            // }
 
-            // se o tipo da análise da variável for único, é necessário existir o parametro text no input
-            if($analyze['type'] === 'unique') {
-                $text = $this->request->getVar("text");
-                return $this->response->setJSON($footerInfoModel->updateFooterAnchor($text, $analyze['target']));
-            }
-        }
+            // // se o tipo da análise da variável for único, é necessário existir o parametro text no input
+            // if($analyze['type'] === 'unique') {
+            //     $text = $this->request->getVar("text");
+            //     return $this->response->setJSON($footerInfoModel->updateFooterAnchor($text, $analyze['target']));
+            // }
+			$footerInfoModel = new FooterModel();
+            $json = $this->request->getVar("mainNavigation");
+			return $this->response->setJSON($footerInfoModel->updateFooterMainNavigation($json));
+		}
     }
 }

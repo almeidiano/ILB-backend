@@ -61,7 +61,7 @@ $routes->group('cms', function($routes) {
     $routes->get('footer', 'CMS\FooterController::getFooterInfo');
 
     // Método PUT
-    $routes->put('footer', 'CMS\FooterController::updateFooterItem');
+    $routes->put('footer/mainNavigation', 'CMS\FooterController::updateFooterMainNavigation');
 
     // SYSTEM INFO
     

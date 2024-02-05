@@ -42,4 +42,21 @@ class FooterModel extends Model
             throw new Exception("Erro ao atualizar. Erro técnico: ".$ex->getMessage(), 500);
         }
     }
+
+    public function updateFooterMainNavigation($json) {
+        if($json) {
+            try {
+                $this->collection->updateOne(
+                    ['_id' => '65b6ed773f521046d162bf94'],
+                    ['$set' => ['mainNavigation' => [$json]]]
+                );
+
+                return 'Atualizado';
+            } catch (Exception $e) {
+                throw new Exception("Ocorreu um erro ao atualizar. Erro técnico: " . $e->getMessage(), 500);
+            }
+        }else {
+            throw new Exception("Corpo não especificado", 401);
+        }
+    }
 }
