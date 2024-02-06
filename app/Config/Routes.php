@@ -62,6 +62,10 @@ $routes->group('cms', function($routes) {
 
     // Método PUT
     $routes->put('footer/mainNavigation', 'CMS\FooterController::updateFooterMainNavigation');
+    $routes->put('footer/socialMedia', 'CMS\FooterController::updateFooterSocialMedia');
+    $routes->put('footer/legal', 'CMS\FooterController::updateFooterLegal');
+    $routes->put('footer/contact', 'CMS\FooterController::updateFooterContact');
+    $routes->put('footer/weddingDistricties', 'CMS\FooterController::updateFooterWeddingDistricties');
 
     // SYSTEM INFO
     

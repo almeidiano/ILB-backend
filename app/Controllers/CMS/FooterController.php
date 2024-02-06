@@ -79,4 +79,9 @@ class FooterController extends BaseController
 			return $this->response->setJSON($footerInfoModel->updateFooterMainNavigation($json));
 		}
     }
+
+	// public function updateFooterMainNavigation(): \CodeIgniter\HTTP\ResponseInterface
+    // {
+
+	// }
 }

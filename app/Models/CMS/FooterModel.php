@@ -47,8 +47,8 @@ class FooterModel extends Model
         if($json) {
             try {
                 $this->collection->updateOne(
-                    ['_id' => '65b6ed773f521046d162bf94'],
-                    ['$set' => ['mainNavigation' => [$json]]]
+                    ['_id' => new ObjectId("65b6ed773f521046d162bf94")],
+                    ['$set' => ['mainNavigation' => $json]]
                 );
 
                 return 'Atualizado';
