@@ -34,7 +34,13 @@ class SystemModel extends Model
 
             $this->collection->updateOne(
                 ['_id' => new ObjectId($sysInfo['_id'])],
-                ['$set' => [$json['target'] => $json['text']]]
+                ['$set' => [
+                    'websiteTitle' => $json['websiteTitle'],
+                    'contactNumber' => $json['contactNumber'],
+                    'websiteEmail' => $json['websiteEmail'],
+                    'websiteDescription' => $json['websiteDescription'],
+                    'websiteKeywords' => $json['websiteKeywords'],
+                ]]
             );
 
             return 'Item atualizado';

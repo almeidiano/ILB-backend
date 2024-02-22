@@ -16,7 +16,7 @@ class SystemController extends BaseController
     public function updateSystemInfo(): \CodeIgniter\HTTP\ResponseInterface {
         $sysModel = new SystemModel();
 
-        $json = $this->request->getVar(["text", "target"]);
+        $json = $this->request->getVar(["websiteTitle", "contactNumber", "websiteEmail", "websiteDescription", "websiteKeywords"]);
         return $this->response->setJSON($sysModel->updateSystemInfo($json));
     }
 }
