@@ -18,16 +18,16 @@ class DatabaseConnector {
      * @throws Exception
      */
     function __construct($database) {
-        $uri = getenv('URL_ATLAS');
+        // $uri = getenv('URL_ATLAS');
         // $database = getenv('BANCO_DE_DADOS');
 
 
-        if (empty($uri)) {
-            throw new Exception('Você precisa declarar a URL_ATLAS e o BANCO_DE_DADOS no arquivo .env!', 500);
-        }
+//        if (empty($uri)) {
+//            throw new Exception('Você precisa declarar a URL_ATLAS e o BANCO_DE_DADOS no arquivo .env!', 500);
+//        }
 
         try {
-            $this->client = new Client($uri);
+            $this->client = new Client("mongodb+srv://almeidiano:BTYCyUpOEwRtOb30@cluster0.iwnx7xq.mongodb.net");
         } catch(ConnectionException $ex) {
             throw new Exception('Não foi possível conectar-se ao banco de dados. Erro técnico: ' . $ex->getMessage(), 500);
         }
