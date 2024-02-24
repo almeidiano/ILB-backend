@@ -50,7 +50,7 @@ $routes->group('cms', function($routes) {
     $routes->post('navigation', 'CMS\NavigationController::addNavItem');
 
     // Método PUT
-    $routes->put('navigation', 'CMS\NavigationController::updateNavItem');
+    $routes->put('navigation', 'CMS\NavigationController::update');
 
     // Método DELETE
     $routes->delete('navigation', 'CMS\NavigationController::deleteNavItem');

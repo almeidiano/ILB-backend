@@ -22,10 +22,10 @@ class NavigationController extends BaseController
         }
     }
 
-    public function updateNavItem(): \CodeIgniter\HTTP\ResponseInterface
+    public function update(): \CodeIgniter\HTTP\ResponseInterface
     {
         if($this->request->is('put')) {
-            $json = $this->request->getVar(["oldUrl", "newUrl", "oldText", "newText", "children"]);
+            $json = $this->request->getVar(["items", "navigationLogo"]);
             $navigationInfoModel = new NavigationModel();
             return $this->response->setJSON($navigationInfoModel->updateNavItem($json));
         }

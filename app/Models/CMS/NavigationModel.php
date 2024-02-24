@@ -100,21 +100,17 @@ class NavigationModel extends Model
      */
     public function updateNavItem($json) {
         try {
-            if($json['oldText'] != null && $json['oldUrl'] != null) {
-                $itemFound = $this->getNavItem($json['oldText']);
-
-                $this->collection->updateOne(
-                    [
-                        'items.text' => $itemFound['text']
+            $this->collection->updateOne(
+                [
+                    '_id' => new ObjectId("65b941b9b22f07876a292761")
+                ],
+                [
+                    '$set' => [
+                        "items" => $json['items'],
+                        "navigationLogo" => $json['navigationLogo']
                     ],
-                    [
-                        '$set' => [
-                            'items.$.text' => $json['newText'],
-                            'items.$.url' => $json['newUrl'],
-                        ],
-                    ]
-                );
-            }else return exit('Dados não especificados.');
+                ]
+            );
 
             return 'Item atualizado';
         } catch (Exception $ex) {
