@@ -27,7 +27,7 @@ class DatabaseConnector {
 //        }
 
         try {
-            $this->client = new Client("mongodb+srv://almeidiano:BTYCyUpOEwRtOb30@cluster0.iwnx7xq.mongodb.net");
+            $this->client = new Client("");
         } catch(ConnectionException $ex) {
             throw new Exception('Não foi possível conectar-se ao banco de dados. Erro técnico: ' . $ex->getMessage(), 500);
         }
